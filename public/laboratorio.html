@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório Multiusuário</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body onload="checkCookie()">
+  <div class="container">
+    <h1>Laboratório Multiusuário</h1>
+
+    <div class="buttons-container">
+      <button class="button" id="getCV">Get CV value</button>
+      <div class="data" id="dataCV"></div>
+
+      <button class="button" id="getCL">Get CL value</button>
+      <div class="data" id="dataCL"></div>
+
+      <button class="button" id="getCA1">Get CA1 value</button>
+      <div class="data" id="dataCA1"></div>
+
+      <button class="button" id="getCA2">Get CA2 value</button>
+      <div class="data" id="dataCA2"></div>
+
+      <button class="button" id="getCA3">Get CA3 value</button>
+      <div class="data" id="dataCA3"></div>
+    </div>
+
+    <textarea class="textarea" id="NBolas" placeholder="Número de bolinhas desejado" minlength="1" maxlength="2"></textarea>
+    <div class="data" id="dataNBolas"></div>
+
+    <button class="button start-button" id="Start">Start</button>
+    <div class="data" id="dataStart"></div>
+
+    <h2>Digital Twin</h2>
+    <div id="threejs-container"></div>
+
+    <h2>Video Stream Thomas 1</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video_feed_0" alt="Camera Feed" loading="lazy"/>
+    </div>
+  
+    <h2>Video Stream Thomas 2</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video_feed_1" alt="Camera Feed" loading="lazy"/>
+    </div>
+
+    <h2>Video Stream PIPEFA</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video_feed_2" alt="Camera Feed" loading="lazy"/>
+    </div>
+    
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/dynamsoft-camera-enhancer@2.1.0/dist/dce.js"></script>
+  <script src="script.js"></script>
+  <script src="cena.js"></script>
+  <script src="pista_pontos.js"></script>
+  <script src="visualizador_3D_test.js"></script>
+  <script src="cookie.js"></script>
+
+</body>
+</html>
