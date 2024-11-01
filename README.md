@@ -17,3 +17,5 @@ A página do laboratório utiliza cookies para verificar o estado do usuário ao
 O estilo e layout do site são gerenciados pelo arquivo `styles.css`.
 
 Aproveite a experiência e explore todas as funcionalidades que o nosso laboratório tem a oferecer!
+
+Funciona!
