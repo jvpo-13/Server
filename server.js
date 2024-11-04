@@ -314,6 +314,7 @@ app.post('/login', (req, res) => {
       let mailOptions = {
         from: 'jvpo.emailsender@gmail.com',
         to: 'jvpomigliooliveira@gmail.com',
+        // to: 'k247218@dac.unicamp.br',
         subject: 'Acesso ao Multi Usuario',
         text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
       };
