@@ -1,4 +1,4 @@
-admin:admin
-kevão:bobão
-kevão:campeão
-labpsp:Lpsp4p0@
+admin:$2b$10$iHo7drdIW7SftYybdAU2t.teU.1G73LQHjzCeJ3mpQ.WZ8IZJzKvm
+kevão:$2b$10$LxS0pu.EaYy0FnE6uJkMEOhqtxzDDLi3UhWWnCiR5toy20PiSM9bO
+kevão:$2b$10$dkwNXQXNcDrG.jtT.yJeieJWql0NY2Vt87tdi8HNg9ue.DojO2PaK
+labpsp:$2b$10$d4zgcwEUv.Z.gC3UHzyvduLQmSv.dJQadScL2rbrKM8UMQ8Ru0Bn6

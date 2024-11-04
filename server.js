@@ -44,21 +44,6 @@ exec('C:/Users/Cooper/Desktop/Server/public/stream1.py', (error, stdout, stderr)
   console.log(`Saída do Python: ${stdout}`);
 });
 
-// Executa o script Python
-exec('C:/Users/Cooper/Desktop/Server/public/stream2.py', (error, stdout, stderr) => {
-  if (error) {
-    console.error(`Erro ao executar o script Python: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.error(`Erro no script Python: ${stderr}`);
-    return;
-  }
-
-  // Saída do script Python
-  console.log(`Saída do Python: ${stdout}`);
-});
-
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 app.use('/', express.static(publicPath));
@@ -271,8 +256,18 @@ app.use((req, res, next) => {
   console.log('Endereço IP:', ip);
   next();
 });
-//https://pt.infobyip.com/ip-179.135.197.193.html
-//https://localizeip.com.br/
+
+//################################  Hash e Autenticação ################################//
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+const listaSenhas = ['admin', 'bobão', 'campeão', 'Lpsp4p0@']; // Senhas a serem hasheadas
+/*
+for (const senha of listaSenhas) {
+  const hash = bcrypt.hashSync(senha, saltRounds);
+  console.log('Senha:', senha, 'Hash:', hash);
+}*/
+
 //################################  Autenticação ################################//
 
 // Rota para login
@@ -299,7 +294,7 @@ app.post('/login', (req, res) => {
 
     users.forEach(user => {
       const [fileUsername, filePassword] = user.split(':');
-      if (fileUsername.trim() === username && filePassword.trim() === password) {
+      if (fileUsername.trim() === username && bcrypt.compareSync(password, filePassword.trim())) {
         isAuthenticated = true;
       }
     });
