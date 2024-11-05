@@ -1,7 +1,7 @@
 body {
     margin: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #f0f4f8;
+    background-color: #0103053b;
     color: #333;
   }
   
@@ -9,9 +9,9 @@ body {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background: #ffffff;
+    background: #ffffffad;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.301);
   }
   
   h1 {
@@ -23,11 +23,27 @@ body {
     text-align: center;
     color: #33798f;
   }
+
+  .imagem {
+    display: block;
+    width: 100%;
+  }
   
+  .login-container {
+    max-height: 50%;
+    justify-self: center;
+    width: 100%;
+    text-align: center;
+    display: block;
+    gap: 10px;
+    padding: 5% 0%;
+  }
+
   .buttons-container {
+    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
   }
   
   .button {
@@ -70,14 +86,14 @@ body {
   }
   
   #threejs-container {
-    width: 800px;
-    height: 800px; /* Altura fixa para que fique quadrado */
+    width: 100%;
+    height: auto; /* Altura fixa para que fique quadrado */
     aspect-ratio: 1; /* Manter a proporção de 1:1 (quadrado) */
     border: 5px solid #33798f;
     border-radius: 8px;
     margin-top: 20px;
   }
-  
+
   .start-button {
     background-color: #f39c12;
   }

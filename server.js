@@ -13,8 +13,6 @@ const session = require('express-session');
 //const cors = require('cors');
 //app.use(cors());
 
-
-
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 app.use('/', express.static(publicPath));
@@ -75,7 +73,7 @@ app.get('/video_feed_2', createProxyMiddleware({
 // Outros Endpoints Existentes
 app.get('/data', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/data');
+    const response = await fetch('http://localhost:1880/data');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -86,7 +84,7 @@ app.get('/data', async (req, res) => {
 
 app.get('/getCV', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCV');
+    const response = await fetch('http://localhost:1880/getCV');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -97,7 +95,7 @@ app.get('/getCV', async (req, res) => {
 
 app.get('/getCL', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCL');
+    const response = await fetch('http://localhost:1880/getCL');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -108,7 +106,7 @@ app.get('/getCL', async (req, res) => {
 
 app.get('/getCA1', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA1');
+    const response = await fetch('http://localhost:1880/getCA1');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -119,7 +117,7 @@ app.get('/getCA1', async (req, res) => {
 
 app.get('/getCA2', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA2');
+    const response = await fetch('http://localhost:1880/getCA2');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -130,7 +128,7 @@ app.get('/getCA2', async (req, res) => {
 
 app.get('/getCA3', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA3');
+    const response = await fetch('http://localhost:1880/getCA3');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -141,7 +139,7 @@ app.get('/getCA3', async (req, res) => {
 
 app.get('/Start', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/Start');
+    const response = await fetch('http://localhost:1880/Start');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -160,7 +158,7 @@ app.put('/NBolas', async (req, res) => {
       return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
     }
 
-    const response = await fetch('http://143.106.61.223:1880/NBolas', {
+    const response = await fetch('http://localhost:1880/NBolas', {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
@@ -275,24 +273,26 @@ app.post('/login', (req, res) => {
       res.status(200).json({ message: 'Login bem-sucedido!' });
       var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
       console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
-     
-      // Configurando os detalhes do email
-      let mailOptions = {
-        from: 'jvpo.emailsender@gmail.com',
-        to: 'jvpomigliooliveira@gmail.com',
-        // to: 'k247218@dac.unicamp.br',
-        subject: 'Acesso ao Multi Usuario',
-        text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
-      };
+      
+      const emailList = ['jvpomigliooliveira@gmail.com', 'k247218@dac.unicamp.br', 'labpsp@fem.unicamp.br'];
 
-       // Enviar o email
-      transporter.sendMail(mailOptions, function(error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email enviado: ' + info.response);
-        }
-      });
+      for (const email of emailList) {
+        // Configurando os detalhes do email
+        let mailOptions = {
+          from: 'jvpo.emailsender@gmail.com',
+          to: email,
+          subject: 'Acesso ao Multi Usuario',
+          text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
+        };
+        // Enviar o email
+        transporter.sendMail(mailOptions, function(error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email enviado: ' + info.response);
+          }
+        });
+      }
     } else {
       res.status(401).json({ message: 'Credenciais inválidas!' });
     }
