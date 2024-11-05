@@ -230,12 +230,12 @@ app.use((req, res, next) => {
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const listaSenhas = ['admin', 'bobão', 'campeão', 'Lpsp4p0@','19801973']; // Senhas a serem hasheadas
-
+const listaSenhas = ['']; // Senhas a serem hasheadas
+/*
 for (const senha of listaSenhas) {
   const hash = bcrypt.hashSync(senha, saltRounds);
   console.log('Senha:', senha, 'Hash:', hash);
-}
+}*/
 
 //################################  Autenticação ################################//
 
