@@ -33,6 +33,7 @@ pontos.add(pointsPathCA1());
 pontos.add(pointsPathCL());
 pontos.add(pointsPathCA2());
 pontos.add(pointsPathCA3());
+
 const caminho = path();
 //scene.add(caminho);
 

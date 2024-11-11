@@ -25,7 +25,7 @@ app.use(session({
   cookie: {
     secure: false,  // Deve ser true se usar HTTPS
     //maxAge: 1 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
-    maxAge:  10000
+    maxAge:  1000
   }
 }));
 
