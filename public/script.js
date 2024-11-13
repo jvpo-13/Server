@@ -1,18 +1,39 @@
-document.getElementById('getCV').addEventListener('click', async () => {
-  try {
-      const response = await fetch('http://143.106.61.223:3000/getCV');
-      if (!response.ok) {
-          throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      console.log(data);
-      document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
-  } catch (error) {
-      console.error('Error fetching data:', error);
-  }
+let autoget = false;
+
+document.getElementById('getValues').addEventListener('click', async () => {
+    autoget = !autoget;
 });
 
-document.getElementById('getCL').addEventListener('click', async () => {
+
+
+setInterval(getAllValues, 1000);
+
+async function getAllValues(){
+    if(autoget){
+        getCVValue();
+        getCLValue();
+        getCA1Value();
+        getCA2Value();
+        getCA3Value();
+    }
+}
+
+async function getCVValue(){
+    try {
+        const response = await fetch('http://143.106.61.223:3000/getCV');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log(data);
+        document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+    return data;
+}
+
+async function getCLValue(){
     try {
         const response = await fetch('http://143.106.61.223:3000/getCL');
         if (!response.ok) {
@@ -24,9 +45,10 @@ document.getElementById('getCL').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    return data;
+}
 
-document.getElementById('getCA1').addEventListener('click', async () => {
+async function getCA1Value(){
     try {
         const response = await fetch('http://143.106.61.223:3000/getCA1');
         if (!response.ok) {
@@ -38,9 +60,10 @@ document.getElementById('getCA1').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    return data;
+}
 
-document.getElementById('getCA2').addEventListener('click', async () => {
+async function getCA2Value(){
     try {
         const response = await fetch('http://143.106.61.223:3000/getCA2');
         if (!response.ok) {
@@ -52,9 +75,10 @@ document.getElementById('getCA2').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    return data;
+}
 
-document.getElementById('getCA3').addEventListener('click', async () => {
+async function getCA3Value(){
     try {
         const response = await fetch('http://143.106.61.223:3000/getCA3');
         if (!response.ok) {
@@ -66,7 +90,8 @@ document.getElementById('getCA3').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    return data;
+}
 
 document.getElementById('Start').addEventListener('click', async () => {
     let value = document.getElementById('NBolas').value;

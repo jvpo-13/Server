@@ -24,8 +24,7 @@ app.use(session({
   saveUninitialized: true,
   cookie: {
     secure: false,  // Deve ser true se usar HTTPS
-    //maxAge: 1 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
-    maxAge:  1000
+    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
   }
 }));
 
@@ -42,6 +41,10 @@ app.use((req, res, next) => {
 });
 
 app.get('/login', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -174,6 +177,33 @@ app.put('/NBolas', async (req, res) => {
   }
 });
 
+app.put('/getCV', async (req, res) => {
+  try {
+    console.log('PUT request received:', req.body);
+    let { value } = req.body;  // Extrai o valor do body
+
+    value = parseInt(value);  // Converte a string para número
+    
+    if (isNaN(value)) {
+      return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
+    }
+
+    const response = await fetch('http://localhost:1880/NBolas', {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ value })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error performing PUT request:', error);
+    res.status(500).send('Error performing PUT request');
+  }
+});
+
 //################################  Cookies ################################//
 // For todays date;
 Date.prototype.today = function () { 
@@ -230,12 +260,12 @@ app.use((req, res, next) => {
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const listaSenhas = ['']; // Senhas a serem hasheadas
-/*
+const listaSenhas = []; // Senhas a serem hasheadas
+
 for (const senha of listaSenhas) {
   const hash = bcrypt.hashSync(senha, saltRounds);
   console.log('Senha:', senha, 'Hash:', hash);
-}*/
+}
 
 //################################  Autenticação ################################//
 
@@ -274,7 +304,7 @@ app.post('/login', (req, res) => {
       var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
       console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
       
-      const emailList = ['jvpomigliooliveira@gmail.com', 'k247218@dac.unicamp.br', 'labpsp@fem.unicamp.br'];
+      const emailList = ['jvpomigliooliveira@gmail.com', 'k247218@dac.unicamp.br', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br'];
 
       for (const email of emailList) {
         // Configurando os detalhes do email

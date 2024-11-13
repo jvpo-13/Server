@@ -1,7 +1,7 @@
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
-    d.setTime(d.getTime() + (exdays * 10000));
-    //d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    //d.setTime(d.getTime() + (exdays * 10000));
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
@@ -21,11 +21,11 @@ function getCookie(cname) {
     }
     return "";
 }
-
+/*
 function deleteCookie(cname) {
     document.cookie = cname + '=; Max-Age=-99999999; path=/';
 }
-
+*/
 function checkCookie() {
     //deleteCookie('username')
     let user = getCookie("username");
