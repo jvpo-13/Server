@@ -20,7 +20,7 @@ async function getAllValues(){
 
 async function getCVValue(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCV');
+        const response = await fetch('http://143.106.61.223/getCV');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -35,7 +35,7 @@ async function getCVValue(){
 
 async function getCLValue(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCL');
+        const response = await fetch('http://143.106.61.223/getCL');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -50,7 +50,7 @@ async function getCLValue(){
 
 async function getCA1Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA1');
+        const response = await fetch('http://143.106.61.223/getCA1');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -65,7 +65,7 @@ async function getCA1Value(){
 
 async function getCA2Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA2');
+        const response = await fetch('http://143.106.61.223/getCA2');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -80,7 +80,7 @@ async function getCA2Value(){
 
 async function getCA3Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA3');
+        const response = await fetch('http://143.106.61.223/getCA3');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -96,7 +96,7 @@ async function getCA3Value(){
 document.getElementById('Start').addEventListener('click', async () => {
     let value = document.getElementById('NBolas').value;
     try {
-        const response = await fetch('http://143.106.61.223:3000/NBolas', {
+        const response = await fetch('http://143.106.61.223/NBolas', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ document.getElementById('Start').addEventListener('click', async () => {
 
         // Outra chamada ao endpoint Start
         try {
-            const response = await fetch('http://143.106.61.223:3000/Start');
+            const response = await fetch('http://143.106.61.223/Start');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

@@ -1,17 +1,26 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
 const app = express();
-const server = http.createServer(app);
-const PORT = 3000;
 
 const session = require('express-session');
 
 // Habilita o CORS
 //const cors = require('cors');
 //app.use(cors());
+
+// Substitua pelos caminhos corretos para seus arquivos de certificado
+const options = {
+  key: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/privkey.pem'),
+  cert: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/cert.pem'),
+  ca: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/chain.pem'),
+};
+const httpServer = http.createServer(app);
+const server = https.createServer(options, app);
 
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
@@ -23,7 +32,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false,  // Deve ser true se usar HTTPS
+    secure: true,  // Deve ser true se usar HTTPS
     maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
   }
 }));
@@ -31,20 +40,22 @@ app.use(session({
 // Middleware para registrar cada requisição recebida
 // Middleware global, exceto para páginas públicas (login, por exemplo)
 app.use((req, res, next) => {
-  const publicPaths = ['/login.html', '/login'];
+  const publicPaths = ['/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG'];
   if (!publicPaths.includes(req.path) && (!req.session || !req.session.user)) {
     console.log('Usuário não autenticado. Redirecionando para a página de login...');
     return res.redirect('/login');
   }
-  console.log('Received request:', req.method, req.url);
   next();
 });
 
-app.get('/login', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+app.get('/', async (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/laboratorio');
+  }
+  res.redirect('/login');
 });
 
-app.get('/', async (req, res) => {
+app.get('/login', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -269,9 +280,6 @@ for (const senha of listaSenhas) {
 
 //################################  Autenticação ################################//
 
-// Rota para login
-const fs = require('fs');
-
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -303,8 +311,7 @@ app.post('/login', (req, res) => {
       res.status(200).json({ message: 'Login bem-sucedido!' });
       var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
       console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
-      
-      const emailList = ['jvpomigliooliveira@gmail.com', 'k247218@dac.unicamp.br', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br', 'k247218@dac.unicamp.br'];
+      const emailList = ['jvpomigliooliveira@gmail.com', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br'];
 
       for (const email of emailList) {
         // Configurando os detalhes do email
@@ -315,13 +322,15 @@ app.post('/login', (req, res) => {
           text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
         };
         // Enviar o email
-        transporter.sendMail(mailOptions, function(error, info) {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log('Email enviado: ' + info.response);
-          }
-        });
+        if (req.session.user != 'admin') {
+          transporter.sendMail(mailOptions, function(error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email enviado: ' + info.response);
+            }
+          });
+        }
       }
     } else {
       res.status(401).json({ message: 'Credenciais inválidas!' });
@@ -331,6 +340,10 @@ app.post('/login', (req, res) => {
 
 //################################  Loop ################################//
 
-server.listen(PORT, () => {
-  console.log(`HTTP Server listening on port ${PORT}`);
+server.listen(443, '143.106.61.223', () => {
+  console.log(`HTTPS Server listening on port ${443}`);
+});
+
+httpServer.listen(80, '143.106.61.223', () => {
+  console.log(`HTTP Server listening on port ${80}`);
 });
