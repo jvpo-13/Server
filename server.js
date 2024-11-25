@@ -1,11 +1,14 @@
-const express = require('express');
+
 const http = require('http');
 const https = require('https');
+const http2 = require('http2');
 const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
+const express = require('express');
 const app = express();
+
 
 const session = require('express-session');
 
@@ -19,8 +22,10 @@ const options = {
   cert: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/cert.pem'),
   ca: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/chain.pem'),
 };
+
 const httpServer = http.createServer(app);
 const server = https.createServer(options, app);
+//const server = http2.createSecureServer(options, app);
 
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
@@ -28,19 +33,33 @@ app.use('/', express.static(publicPath));
 app.use(express.json());
 
 app.use(session({
-  secret: 'your-secret-key',  // Chave secreta para criptografar a sessão
+  secret: 'your-secret-key', // Chave secreta para criptografar a sessão
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: true,  // Deve ser true se usar HTTPS
-    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
+    secure: true, // Deve ser true se usar HTTPS
+    httpOnly: true, // Evita acesso do lado do cliente
+    sameSite: 'none', // Permite envio de cookies em contextos de terceiros
+    domain: '.fem.unicamp.br', // Ajuste para seu domínio
+    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos
   }
 }));
 
+
 // Middleware para registrar cada requisição recebida
 // Middleware global, exceto para páginas públicas (login, por exemplo)
+
 app.use((req, res, next) => {
-  const publicPaths = ['/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG'];
+  if (!req.secure) {
+    console.log('Requisição insegura. Redirecionando para HTTPS...');
+    return res.redirect(`https://hd2d.fem.unicamp.br${req.url}`);
+  }
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    //res.setHeader('Content-Security-Policy', 'default-src self; script-src self unsafe-inline; style-src self unsafe-inline');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    }
+  const publicPaths = ['/', '/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG'];
   if (!publicPaths.includes(req.path) && (!req.session || !req.session.user)) {
     console.log('Usuário não autenticado. Redirecionando para a página de login...');
     return res.redirect('/login');
@@ -48,8 +67,19 @@ app.use((req, res, next) => {
   next();
 });
 
+
 app.get('/', async (req, res) => {
-  if (req.session.user) {
+  const { username, password } = req.query; // Captura credenciais enviadas na query string
+  
+  // Valide as credenciais (exemplo básico)
+  if (username === 'admin' && password === 'admin') {
+    // Cria a sessão para o usuário
+    req.session.user = username;
+    console.log(`Login automático realizado para o usuário: ${username}`);
+    
+    //Redireciona para a página desejada
+    return res.redirect('/video_feed_0');
+  } else if (req.session.user) {
     return res.redirect('/laboratorio');
   }
   res.redirect('/login');

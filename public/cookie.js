@@ -43,7 +43,7 @@ function checkCookie() {
 
 async function getUser(user) {
     try {
-        const response = await fetch('http://143.106.61.223:3000/User', {
+        const response = await fetch('https://hd2d.fem.unicamp.br/User', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
