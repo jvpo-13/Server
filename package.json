@@ -3,6 +3,7 @@
     "bcrypt": "^5.1.1",
     "express": "^4.19.2",
     "express-session": "^1.18.1",
+    "fs": "^0.0.1-security",
     "http-proxy-middleware": "^3.0.3",
     "http2": "^3.3.6",
     "node": "^22.7.0",
