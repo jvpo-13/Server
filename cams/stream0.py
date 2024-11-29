@@ -1,3 +1,4 @@
+import time
 from flask import Flask, Response
 import cv2
 
@@ -6,7 +7,6 @@ app = Flask(__name__)
 def generate():
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-    # Aumentando a qualidade da captura de vídeo
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Largura da resolução
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Altura da resolução
     cap.set(cv2.CAP_PROP_FPS, 2)  # Taxa de quadros (opcional)
@@ -16,7 +16,6 @@ def generate():
         if not ret:
             break
 
-        # Ajustar a qualidade da imagem JPEG
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
         _, buffer = cv2.imencode('.jpg', frame, encode_param)
         frame = buffer.tobytes()
@@ -30,4 +29,9 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    while True:
+        try:
+            app.run(host='0.0.0.0', port=5000, debug=True)
+        except Exception as e:
+            print(f"Erro detectado: {e}. Reiniciando o servidor em 1 segundos...")
+            time.sleep(1)

@@ -5,7 +5,6 @@ document.getElementById('getValues').addEventListener('click', async () => {
 });
 
 
-
 setInterval(getAllValues, 1000);
 
 async function getAllValues(){
@@ -20,7 +19,7 @@ async function getAllValues(){
 
 async function getCVValue(){
     try {
-        const response = await fetch('http://143.106.61.223/getCV');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCV');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -30,12 +29,12 @@ async function getCVValue(){
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-    return data;
+    //return data;
 }
 
 async function getCLValue(){
     try {
-        const response = await fetch('http://143.106.61.223/getCL');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCL');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -45,12 +44,12 @@ async function getCLValue(){
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-    return data;
+    //return data;
 }
 
 async function getCA1Value(){
     try {
-        const response = await fetch('http://143.106.61.223/getCA1');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA1');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -60,12 +59,12 @@ async function getCA1Value(){
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-    return data;
+    //return data;
 }
 
 async function getCA2Value(){
     try {
-        const response = await fetch('http://143.106.61.223/getCA2');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA2');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -75,12 +74,12 @@ async function getCA2Value(){
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-    return data;
+    //return data;
 }
 
 async function getCA3Value(){
     try {
-        const response = await fetch('http://143.106.61.223/getCA3');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA3');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -90,13 +89,13 @@ async function getCA3Value(){
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-    return data;
+    //return data;
 }
 
 document.getElementById('Start').addEventListener('click', async () => {
     let value = document.getElementById('NBolas').value;
     try {
-        const response = await fetch('http://143.106.61.223/NBolas', {
+        const response = await fetch('https://hd2d.fem.unicamp.br/NBolas', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +112,7 @@ document.getElementById('Start').addEventListener('click', async () => {
 
         // Outra chamada ao endpoint Start
         try {
-            const response = await fetch('http://143.106.61.223/Start');
+            const response = await fetch('https://hd2d.fem.unicamp.br/Start');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
