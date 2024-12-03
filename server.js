@@ -262,7 +262,7 @@ app.put('/User', async (req, res) => {
     let { value } = req.body;  // Extrai o nome do usuário
     
     if (!value || typeof value !== 'string') {  // Verifica se "value" é uma string válida
-      return res.status(400).json({ error: 'Invalid user name' });
+      return res.status(400).json({ error: 'Nome inválido' });
     }
     var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
     console.log(datetime,' Cookie User Name:', value);  // Printa o nome do usuário no console do servidor

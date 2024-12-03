@@ -31,9 +31,9 @@ function checkCookie() {
     let user = getCookie("username");
     if (user != "") {
         getUser(user);
-        alert("Welcome again " + user);
+        alert("Bem vindo de volta " + user);
     } else {
-        user = prompt("Please enter your name:", "");
+        user = prompt("Por favor, insira seu nome:", "");
         if (user != "" && user != null) {
             setCookie("username", user, 1);
             getUser(user);
