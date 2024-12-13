@@ -245,6 +245,50 @@ app.put('/getCV', async (req, res) => {
   }
 });
 
+app.get('/Velocidade', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getVelocidade');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Tempo_Ligado', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getTempo_Ligado');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Distancia_Percorrida', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getDistancia_Percorrida');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Nivel_Bateria', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getNivel_Bateria');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
 //################################  Cookies ################################//
 // For todays date;
 Date.prototype.today = function () { 
