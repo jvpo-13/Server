@@ -31,7 +31,7 @@ async function getCVValue(){
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        //console.log(data);
+        console.log(data);
         document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -46,7 +46,7 @@ async function getCLValue(){
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        //console.log(data);
+        console.log(data);
         document.getElementById('dataCL').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -125,7 +125,8 @@ document.getElementById('Start').addEventListener('click', async () => {
         }
 
         const data = await response.json();
-        document.getElementById('dataNBolas').innerText = JSON.stringify(data, null, 2);
+        //document.getElementById('dataNBolas').innerText = JSON.stringify(data, null, 2);
+        //console.log(data);
 
         // Outra chamada ao endpoint Start
         try {
@@ -133,7 +134,7 @@ document.getElementById('Start').addEventListener('click', async () => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            document.getElementById('dataStart').innerText = JSON.stringify(data, null, 2);
+            //document.getElementById('dataStart').innerText = JSON.stringify(data, null, 2);
         } catch (error) {
             console.error('Error fetching data:', error);
         }

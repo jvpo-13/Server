@@ -1,7 +1,6 @@
 
 const http = require('http');
 const https = require('https');
-const http2 = require('http2');
 const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
@@ -25,13 +24,13 @@ const options = {
 
 const httpServer = http.createServer(app);
 const server = https.createServer(options, app);
-//const server = http2.createSecureServer(options, app);
 
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 app.use('/', express.static(publicPath));
 app.use(express.json());
 
+// HTTPS
 app.use(session({
   secret: 'your-secret-key', // Chave secreta para criptografar a sessão
   resave: false,
@@ -45,14 +44,32 @@ app.use(session({
   }
 }));
 
+/*
+app.use(session({
+  secret: 'your-secret-key', // Chave secreta para criptografar a sessão
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Deve ser true se usar HTTPS
+    httpOnly: true, // Evita acesso do lado do cliente
+    sameSite: 'lax', // Permite envio de cookies em contextos de terceiros
+    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos
+  }
+}));
+*/
 
 // Middleware para registrar cada requisição recebida
 // Middleware global, exceto para páginas públicas (login, por exemplo)
 
 app.use((req, res, next) => {
   if (!req.secure) {
+    //HTTPS:
     console.log('Requisição insegura. Redirecionando para HTTPS...');
     return res.redirect(`https://hd2d.fem.unicamp.br${req.url}`);
+
+    //HTTP:
+    //res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    //res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   }
   if (req.secure) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
