@@ -1,4 +1,3 @@
-
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -111,6 +110,14 @@ app.get('/laboratorio', async (req, res) => {
 });
 
 //################################  Video Stream ################################//
+
+// Remova os proxies individuais e use apenas:
+app.use('/video', createProxyMiddleware({ 
+  target: 'http://localhost:5000',
+  changeOrigin: true,
+  ws: true
+}));
+/*
 app.get('/video_feed_0', createProxyMiddleware({ 
   target: 'http://localhost:5000', 
   changeOrigin: true,
@@ -128,6 +135,7 @@ app.get('/video_feed_2', createProxyMiddleware({
   changeOrigin: true,
   ws: true
 }));
+*/
 
 //################################  Requisição de Dados ################################//
 
