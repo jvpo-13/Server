@@ -207,3 +207,38 @@ async function getNivel_Bateria(){
     }
     //return data;
 }
+
+// Adicione esta função
+function updateObserverCount() {
+    fetch('/observer-count')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('observerCount').innerText = 
+          `${data.count}/${data.maxCapacity}`;
+      });
+}
+  
+// Chame na inicialização e atualize periodicamente
+document.addEventListener('DOMContentLoaded', () => {
+    updateObserverCount();
+    setInterval(updateObserverCount, 10000); // Atualiza a cada 10 segundos
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/check-session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.user && !data.observer) {
+          window.location.href = '/login';
+        }
+        if (data.observer) {
+          document.getElementById('controlSection').style.display = 'none';
+          // Atualizar periodicamente o status da sessão
+          setInterval(() => {
+            fetch('/check-session').then(res => res.json()).then(sessionData => {
+              if (!sessionData.observer) window.location.reload();
+            });
+          }, 30000);
+        }
+    });
+});

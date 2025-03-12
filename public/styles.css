@@ -1,103 +1,156 @@
 body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    background-color: #0103053b;
-    color: #333;
-  }
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #0103053b;
+  color: #333;
+}
   
-  .container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #ffffffad;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.301);
-  }
-  
-  h1 {
-    text-align: center;
-    color: #33798f;
-  }
-  
-  h2 {
-    text-align: center;
-    color: #33798f;
-  }
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #ffffffad;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.301);
+}
 
-  .imagem {
-    display: block;
-    width: 100%;
-  }
-  
-  .login-container {
-    max-height: 50%;
-    justify-self: center;
-    width: 100%;
-    text-align: center;
-    display: block;
-    gap: 10px;
-    padding: 5% 0%;
-  }
+h1 {
+  text-align: center;
+  color: #33798f;
+}
 
-  .buttons-container {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .button {
-    background-color: #33798f;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .button:hover {
-    background-color: #285e67;
-  }
-  
-  .data {
-    margin-top: 5px;
-    padding: 5px;
-    border: 1px solid #33798f;
-    border-radius: 5px;
-    background-color: #e6f7f3;
-  }
-  
-  .textarea {
-    height: min-content;
-    margin-top: 10px;
-    border-radius: 5px;
-    border: 1px solid #33798f;
-    padding: 10px 15px;
-    font-size: 16px;
-  }
-  
-  #videoElement {
-    width: 100%;
-    height: auto;
-    border: 5px solid #33798f;
-    border-radius: 8px;
-  }
-  
-  #threejs-container {
-    width: 100%;
-    height: auto; /* Altura fixa para que fique quadrado */
-    aspect-ratio: 1; /* Manter a proporção de 1:1 (quadrado) */
-    border: 5px solid #33798f;
-    border-radius: 8px;
-    margin-top: 20px;
-  }
+h2 {
+  text-align: center;
+  color: #33798f;
+}
 
-  .start-button {
-    background-color: #f39c12;
-  }
-  
-  .start-button:hover {
-    background-color: #e67e22;
-  }
-  
+h3 {
+  text-align: center;
+  color: #33798f;
+}
+
+.imagem {
+  display: block;
+  width: 100%;
+}
+
+.login-container {
+  max-height: 50%;
+  justify-self: center;
+  width: 100%;
+  text-align: center;
+  display: block;
+  gap: 10px;
+  padding: 5% 0%;
+}
+
+.buttons-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.button {
+  background-color: #33798f;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #285e67;
+}
+
+
+/*
+.data {
+  margin-top: 5px;
+  padding: 5px;
+  border: 1px solid #33798f;
+  border-radius: 5px;
+  background-color: #e6f7f3;
+}
+  */
+
+.states-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.state-item {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data {
+  min-height: 40px; /* Altura mínima para uniformidade */
+  display: flex;
+  align-items: center;
+}
+
+/* Títulos das seções */
+.section-title {
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+  margin: 2rem 0 1rem;
+}
+
+/* Grid para Postos */
+.postos-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* Grid para Métricas */
+.metricas-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.state-item h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: #444;
+}
+
+.textarea {
+  height: min-content;
+  margin-top: 10px;
+  border-radius: 5px;
+  border: 1px solid #33798f;
+  padding: 10px 15px;
+  font-size: 16px;
+}
+
+#videoElement {
+  width: 100%;
+  height: auto;
+  border: 5px solid #33798f;
+  border-radius: 8px;
+}
+
+#threejs-container {
+  width: 100%;
+  height: 100%; /* Altura fixa para que fique quadrado */
+  aspect-ratio: 1; /* Manter a proporção de 1:1 (quadrado) */
+  border: 5px solid #33798f;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.start-button {
+  background-color: #f39c12;
+}
+
+.start-button:hover {
+  background-color: #e67e22;
+}
