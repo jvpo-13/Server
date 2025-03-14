@@ -1,7 +1,7 @@
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
-    d.setTime(d.getTime() + (exdays * 10000));
-    //d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    //d.setTime(d.getTime() + (exdays * 10000));
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
@@ -21,19 +21,19 @@ function getCookie(cname) {
     }
     return "";
 }
-
+/*
 function deleteCookie(cname) {
     document.cookie = cname + '=; Max-Age=-99999999; path=/';
 }
-
+*/
 function checkCookie() {
     //deleteCookie('username')
     let user = getCookie("username");
     if (user != "") {
         getUser(user);
-        alert("Welcome again " + user);
+        alert("Bem vindo de volta " + user);
     } else {
-        user = prompt("Please enter your name:", "");
+        user = prompt("Por favor, insira seu nome:", "");
         if (user != "" && user != null) {
             setCookie("username", user, 1);
             getUser(user);
@@ -43,7 +43,7 @@ function checkCookie() {
 
 async function getUser(user) {
     try {
-        const response = await fetch('http://143.106.61.223:3000/User', {
+        const response = await fetch('https://hd2d.fem.unicamp.br/User', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

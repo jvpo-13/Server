@@ -1,23 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body onload="checkCookie()">
-  <h2>Login</h2>
-  <form id="loginForm">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required autocomplete="username">
-  
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required autocomplete="current-password">
-  
-    <button type="button" onclick="loginUser()">Login</button>
-  </form>  
 
-  <script src="login.js"></script>
+  <meta name="google-site-verification" content="JoApBKnNr4baGi-lamXCxxddwZTPCqg6q3uzctvDVrk" />
+
+  <meta property="og:title" content="Laboratório Multiusuário">
+  <meta property="og:description" content="De onde estiver, quando quiser">
+  <meta property="og:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+  <meta property="og:url" content="https://hd2d.fem.unicamp.br/login.html">
+
+  <!-- HTML Meta Tags -->
+  <title>Laboratório Multiusuário</title>
+  <meta name="description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://hd2d.fem.unicamp.br/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Laboratório Multiusuário">
+  <meta property="og:description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+  <meta property="og:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="hd2d.fem.unicamp.br">
+  <meta property="twitter:url" content="https://hd2d.fem.unicamp.br/">
+  <meta name="twitter:title" content="Laboratório Multiusuário">
+  <meta name="twitter:description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+  <meta name="twitter:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+
+  <!-- Meta Tags Generated via https://www.opengraph.xyz -->
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
+  <link rel="canonical" link="https://hd2d.fem.unicamp.br/login.html">
+  
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1><br>
+    <form id="loginForm">
+      <label for="username">Usuário:</label>
+      <input type="text" id="username" name="username" required autocomplete="username">
+      <br><br>
+      <label for="password">Senha:</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+      <br><br>
+      <button type="button" onclick="loginUser()">Entrar</button>
+      <br><br>
+      <button type="button" onclick="loginObserver()">Entrar como Observador</button>
+    </form>  
+  </div>
+  <div>
+    <img src="LMU.JPG" alt="Imagem do brinquedo utilizado no laboratorio" class="imagem"/>
+  </div>
+  <script src="login.js" defer></script>
 </body>
 </html>

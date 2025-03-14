@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="google-site-verification" content="JoApBKnNr4baGi-lamXCxxddwZTPCqg6q3uzctvDVrk" />
+
+  <meta property="og:title" content="Laboratório Multiusuário">
+  <meta property="og:description" content="De onde estiver, quando quiser">
+  <meta property="og:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+  <meta property="og:url" content="https://hd2d.fem.unicamp.br/laboratorio.html">
+
+    <!-- HTML Meta Tags -->
+  <title>Laboratório Multiusuário</title>
+  <meta name="description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://hd2d.fem.unicamp.br/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Laboratório Multiusuário">
+  <meta property="og:description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+  <meta property="og:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="hd2d.fem.unicamp.br">
+  <meta property="twitter:url" content="https://hd2d.fem.unicamp.br/">
+  <meta name="twitter:title" content="Laboratório Multiusuário">
+  <meta name="twitter:description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
+  <meta name="twitter:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
+
+  <!-- Meta Tags Generated via https://www.opengraph.xyz -->
+  <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="canonical" link="https://hd2d.fem.unicamp.br/laboratorio.html">
+
+</head>
+<body onload="checkCookie()">
+  <div class="container">
+    <h1>Laboratório Multiusuário</h1>
+
+    <div class="buttons-container">
+      <!-- Seção 1: Estados dos Postos -->
+      <h2 class="section-title">Estados dos Postos</h2>
+      <div class="states-grid postos-grid">
+        <div class="state-item">
+          <h3>Posto CV</h3>
+          <div class="data" id="dataCV">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Posto CL</h3>
+          <div class="data" id="dataCL">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Posto CA1</h3>
+          <div class="data" id="dataCA1">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Posto CA2</h3>
+          <div class="data" id="dataCA2">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Posto CA3</h3>
+          <div class="data" id="dataCA3">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- Seção 2: Métricas Operacionais -->
+      <h2 class="section-title">Monitoramento</h2>
+      <div class="states-grid metricas-grid">
+        <div class="state-item">
+          <h3>Velocidade</h3>
+          <div class="data" id="Velocidade">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Tempo Ligado</h3>
+          <div class="data" id="Tempo_Ligado">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Distância Percorrida</h3>
+          <div class="data" id="Distancia_Percorrida">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Nível da Bateria</h3>
+          <div class="data" id="Nivel_Bateria">Carregando...</div>
+        </div>
+        <div class="state-item">
+          <h3>Observadores Ativos</h3>
+          <div class="data" id="observerCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="controlSection">
+      <h2 class="section-title">Controle</h2>
+      <div class="buttons-container">
+        <textarea class="textarea" id="NBolas" placeholder="Número de bolinhas desejado" minlength="1" maxlength="2"></textarea>
+        <!--div class="data" id="dataNBolas"></div-->
+  
+        <button class="button start-button" id="Start">Iniciar</button>
+        <div class="data" id="dataStart"></div>
+      </div>
+    </div>    
+
+    <h2>Gêmeo Digital</h2>
+    <div id="threejs-container"></div>
+
+    <h2>Stream de Video: Thomas 1</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video/video_feed_0" alt="Camera Feed" loading="lazy">
+    </div>
+  
+    <h2>Stream de Video: Thomas 2</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video/video_feed_1" alt="Camera Feed" loading="lazy">
+    </div>
+
+    <h2>Stream de Video: PIPEFA</h2>
+    <div id="cameraContainer">
+      <img id="videoElement" src="/video/video_feed_2" alt="Camera Feed" loading="lazy">
+    </div>
+    
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/dynamsoft-camera-enhancer@2.1.0/dist/dce.js"></script>
+  <script src="script.js"></script>
+  <script src="cena.js"></script>
+  <script src="pista_pontos.js"></script>
+  <script src="visualizador_3D.js"></script>
+  <script src="cookie.js"></script>
+
+</body>
+</html>

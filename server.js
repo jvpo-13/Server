@@ -1,90 +1,143 @@
-const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
+const express = require('express');
 const app = express();
-const server = http.createServer(app);
-const PORT = 3000;
 
-const { exec } = require('child_process');
+
 const session = require('express-session');
 
 // Habilita o CORS
 //const cors = require('cors');
 //app.use(cors());
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://hd2d.fem.unicamp.br',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT']
+}));
 
-// Executa o script Python
-exec('C:/Users/Cooper/Desktop/Server/public/stream0.py', (error, stdout, stderr) => {
-  if (error) {
-    console.error(`Erro ao executar o script Python: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.error(`Erro no script Python: ${stderr}`);
-    return;
-  }
+const options = {
+  key: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/privkey.pem'),
+  cert: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/fullchain.pem'),
+};
 
-  // Saída do script Python
-  console.log(`Saída do Python: ${stdout}`);
-});
-
-// Executa o script Python
-exec('C:/Users/Cooper/Desktop/Server/public/stream1.py', (error, stdout, stderr) => {
-  if (error) {
-    console.error(`Erro ao executar o script Python: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.error(`Erro no script Python: ${stderr}`);
-    return;
-  }
-
-  // Saída do script Python
-  console.log(`Saída do Python: ${stdout}`);
-});
-
-// Executa o script Python
-exec('C:/Users/Cooper/Desktop/Server/public/stream2.py', (error, stdout, stderr) => {
-  if (error) {
-    console.error(`Erro ao executar o script Python: ${error.message}`);
-    return;
-  }
-  if (stderr) {
-    console.error(`Erro no script Python: ${stderr}`);
-    return;
-  }
-
-  // Saída do script Python
-  console.log(`Saída do Python: ${stdout}`);
-});
+const httpServer = http.createServer(app);
+const server = https.createServer(options, app);
 
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 app.use('/', express.static(publicPath));
 app.use(express.json());
 
+// HTTPS
 app.use(session({
-  secret: 'your-secret-key',  // Chave secreta para criptografar a sessão
+  secret: 'your-secret-key', // Chave secreta para criptografar a sessão
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false,  // Deve ser true se usar HTTPS
-    //maxAge: 1 * 60 * 1000 // Sessão expira em 15 minutos (15 * 60 * 1000 ms)
-    maxAge:  10000
+    secure: true, // Deve ser true se usar HTTPS
+    httpOnly: true, // Evita acesso do lado do cliente
+    sameSite: 'none', // Permite envio de cookies em contextos de terceiros
+    domain: '.fem.unicamp.br', // Ajuste para seu domínio
+    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos
+  },
+  //sessão do observer seja persistida
+  name: 'labSession',
+  rolling: true
+}));
+
+const requireUser = (req, res, next) => {
+  if (req.session.user) return next();
+  res.status(403).send('Acesso requer autenticação completa');
+};
+
+/*
+app.use(session({
+  secret: 'your-secret-key', // Chave secreta para criptografar a sessão
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Deve ser true se usar HTTPS
+    httpOnly: true, // Evita acesso do lado do cliente
+    sameSite: 'lax', // Permite envio de cookies em contextos de terceiros
+    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos
   }
 }));
+*/
 
 // Middleware para registrar cada requisição recebida
 // Middleware global, exceto para páginas públicas (login, por exemplo)
+
 app.use((req, res, next) => {
-  const publicPaths = ['/login.html', '/login'];
-  if (!publicPaths.includes(req.path) && (!req.session || !req.session.user)) {
-    console.log('Usuário não autenticado. Redirecionando para a página de login...');
-    return res.redirect('/login');
+  if (!req.secure) {
+    //HTTPS:
+    console.log('Requisição insegura. Redirecionando para HTTPS...');
+    return res.redirect(`https://hd2d.fem.unicamp.br${req.url}`);
+
+    //HTTP:
+    //res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    //res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   }
-  console.log('Received request:', req.method, req.url);
+
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    //res.setHeader('Content-Security-Policy', 'default-src self; script-src self unsafe-inline; style-src self unsafe-inline');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  }
+
+  const publicPaths = ['/', '/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG', '/public/favicon.ico', '/loginObserver'];
+  const loginPaths = ['/laboratorio', '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
+  const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/Start', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
+
+  if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
+    console.log('Acesso não autorizado ao path:', req.path);
+    return res.status(404).send('Página não encontrada');
+  }
+
+  if (!publicPaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
+    console.log('Acesso não autorizado ao path:', req.path);
+    return res.status(404).redirect('/login');
+  }
+
+  // Atualizar timestamp do observador
+  if (req.session?.observer && activeObservers.has(req.sessionID)) {
+    activeObservers.set(req.sessionID, Date.now());
+  }
+
+  if (req.session?.user || req.session?.observer) {
+    return next();
+  }
+
   next();
+});
+
+
+app.get('/', async (req, res) => {
+  const { username, password, page } = req.query; // Captura credenciais enviadas na query string
+  // Valide as credenciais (exemplo básico)
+  if (username === 'admin' && password === 'admin'){
+    // Cria a sessão para o usuário
+    req.session.user = username;
+    console.log(`Login automático realizado para o usuário: ${username}`);
+    if (page === 'video_feed_0') {
+      //Redireciona para a página desejada
+      return res.redirect('/video/video_feed_0');
+    }
+    if (page === 'video_feed_1') {
+      //Redireciona para a página desejada
+      return res.redirect('/video/video_feed_1');
+    } 
+    if (page === 'video_feed_2') {
+      //Redireciona para a página desejada
+      return res.redirect('/video/video_feed_2');
+    }
+    return res.redirect('/laboratorio');
+  }
+  return res.redirect('/login');
 });
 
 app.get('/login', async (req, res) => {
@@ -92,24 +145,15 @@ app.get('/login', async (req, res) => {
 });
 
 app.get('/laboratorio', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'public', 'laboratorio.html'));
+  return res.sendFile(path.join(__dirname, 'thomas', 'laboratorio.html'));
 });
 
+
 //################################  Video Stream ################################//
-app.get('/video_feed_0', createProxyMiddleware({ 
-  target: 'http://localhost:5000', 
-  changeOrigin: true,
-  ws: true
-}));
 
-app.get('/video_feed_1', createProxyMiddleware({ 
-  target: 'http://localhost:5001', 
-  changeOrigin: true,
-  ws: true
-}));
-
-app.get('/video_feed_2', createProxyMiddleware({ 
-  target: 'http://143.106.61.198:5002', 
+// Remova os proxies individuais e use apenas:
+app.use('/video', createProxyMiddleware({ 
+  target: 'http://localhost:5000',
   changeOrigin: true,
   ws: true
 }));
@@ -119,7 +163,7 @@ app.get('/video_feed_2', createProxyMiddleware({
 // Outros Endpoints Existentes
 app.get('/data', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/data');
+    const response = await fetch('http://localhost:1880/data');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -130,7 +174,7 @@ app.get('/data', async (req, res) => {
 
 app.get('/getCV', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCV');
+    const response = await fetch('http://localhost:1880/getCV');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -141,7 +185,7 @@ app.get('/getCV', async (req, res) => {
 
 app.get('/getCL', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCL');
+    const response = await fetch('http://localhost:1880/getCL');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -152,7 +196,7 @@ app.get('/getCL', async (req, res) => {
 
 app.get('/getCA1', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA1');
+    const response = await fetch('http://localhost:1880/getCA1');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -163,7 +207,7 @@ app.get('/getCA1', async (req, res) => {
 
 app.get('/getCA2', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA2');
+    const response = await fetch('http://localhost:1880/getCA2');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -174,7 +218,7 @@ app.get('/getCA2', async (req, res) => {
 
 app.get('/getCA3', async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/getCA3');
+    const response = await fetch('http://localhost:1880/getCA3');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -183,9 +227,9 @@ app.get('/getCA3', async (req, res) => {
   }
 });
 
-app.get('/Start', async (req, res) => {
+app.get('/Start', requireUser, async (req, res) => {
   try {
-    const response = await fetch('http://143.106.61.223:1880/Start');
+    const response = await fetch('http://localhost:1880/Start');
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -194,7 +238,7 @@ app.get('/Start', async (req, res) => {
   }
 });
 
-app.put('/NBolas', async (req, res) => {
+app.put('/NBolas', requireUser, async (req, res) => {
   try {
     let { value } = req.body;  // Extrai o valor do body
 
@@ -204,7 +248,7 @@ app.put('/NBolas', async (req, res) => {
       return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
     }
 
-    const response = await fetch('http://143.106.61.223:1880/NBolas', {
+    const response = await fetch('http://localhost:1880/NBolas', {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
@@ -217,6 +261,77 @@ app.put('/NBolas', async (req, res) => {
   } catch (error) {
     console.error('Error performing PUT request:', error);
     res.status(500).send('Error performing PUT request');
+  }
+});
+
+app.put('/getCV', async (req, res) => {
+  try {
+    console.log('PUT request received:', req.body);
+    let { value } = req.body;  // Extrai o valor do body
+
+    value = parseInt(value);  // Converte a string para número
+    
+    if (isNaN(value)) {
+      return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
+    }
+
+    const response = await fetch('http://localhost:1880/NBolas', {
+      method: 'PUT',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ value })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error performing PUT request:', error);
+    res.status(500).send('Error performing PUT request');
+  }
+});
+
+app.get('/Velocidade', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getVelocidade');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Tempo_Ligado', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getTempo_Ligado');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Distancia_Percorrida', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getDistancia_Percorrida');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
+
+app.get('/Nivel_Bateria', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1880/getNivel_Bateria');
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
   }
 });
 
@@ -237,7 +352,7 @@ app.put('/User', async (req, res) => {
     let { value } = req.body;  // Extrai o nome do usuário
     
     if (!value || typeof value !== 'string') {  // Verifica se "value" é uma string válida
-      return res.status(400).json({ error: 'Invalid user name' });
+      return res.status(400).json({ error: 'Nome inválido' });
     }
     var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
     console.log(datetime,' Cookie User Name:', value);  // Printa o nome do usuário no console do servidor
@@ -271,12 +386,106 @@ app.use((req, res, next) => {
   console.log('Endereço IP:', ip);
   next();
 });
-//https://pt.infobyip.com/ip-179.135.197.193.html
-//https://localizeip.com.br/
-//################################  Autenticação ################################//
 
-// Rota para login
-const fs = require('fs');
+//################################  Hash e Autenticação ################################//
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+const listaSenhas = []; // Senhas a serem hasheadas
+
+for (const senha of listaSenhas) {
+  const hash = bcrypt.hashSync(senha, saltRounds);
+  console.log('Senha:', senha, 'Hash:', hash);
+}
+
+//#################################  Observação de Usuário ################################//
+
+// Variáveis globais
+let isOccupied = false;
+let lastActiveTime = null;
+
+// Middleware para verificar sessão
+app.get('/check-session', (req, res) => {
+  res.json({
+    user: req.session.user,
+    observer: req.session.observer
+  });
+});
+
+// Atualizar última atividade
+app.use((req, res, next) => {
+  if (req.session.user) lastActiveTime = Date.now();
+  next();
+});
+
+// Verificar inatividade a cada minuto
+setInterval(() => {
+  if (isOccupied && (Date.now() - lastActiveTime) > 15*60*1000) {
+    isOccupied = false;
+    console.log('Sistema liberado por inatividade');
+  }
+}, 60000);
+
+
+//################################  Contagem de Observador ################################//
+
+const activeObservers = new Map(); // Armazena sessionID e timestamp
+let observerCount = 0;
+
+app.get('/observer-count', (req, res) => {
+  res.json({
+    count: observerCount,
+    maxCapacity: 50 // Defina o limite máximo desejado
+  });
+});
+
+// Verificar observadores inativos a cada minuto
+setInterval(() => {
+  const now = Date.now();
+  activeObservers.forEach((timestamp, sessionID) => {
+    if (now - timestamp > 15 * 60 * 1000) { // 15 minutos de inatividade
+      activeObservers.delete(sessionID);
+      observerCount = activeObservers.size;
+      console.log(`Observador removido. Total: ${observerCount}`);
+    }
+  });
+}, 60000);
+
+//################################  Autenticação ################################//
+// Rota para login observer
+app.post('/loginObserver', (req, res) => {
+  try {
+    if (isOccupied) {
+      req.session.observer = true;
+      
+      // Salvar sessão antes de responder
+      req.session.save(err => {
+        if (err) {
+          console.error('Erro na sessão:', err);
+          return res.status(500).json({message: 'Erro interno'});
+        }
+
+        // Registrar observador
+        activeObservers.set(req.sessionID, Date.now());
+        observerCount = activeObservers.size;
+        
+        console.log('Observador conectado:', req.sessionID);
+        return res.json({
+          message: 'Login observador realizado',
+          redirect: '/laboratorio'
+        });
+      });
+      
+    } else {
+      return res.status(403).json({
+        message: 'Sistema disponível. Faça login completo para controle'
+      });
+    }
+  } catch (error) {
+    console.error('Erro no endpoint:', error);
+    return res.status(500).json({message: 'Erro interno no servidor'});
+  }
+});
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -299,33 +508,45 @@ app.post('/login', (req, res) => {
 
     users.forEach(user => {
       const [fileUsername, filePassword] = user.split(':');
-      if (fileUsername.trim() === username && filePassword.trim() === password) {
+      if (fileUsername.trim() === username && bcrypt.compareSync(password, filePassword.trim())) {
         isAuthenticated = true;
       }
     });
+
+    if (isAuthenticated) {
+      if (isOccupied) {
+        return res.status(403).json({ message: 'Sistema em uso. Acesse como observador.' });
+      }
+      isOccupied = true;
+      lastActiveTime = Date.now();
+    }
 
     if (isAuthenticated) {
       req.session.user = username; // Salva o usuário na sessão
       res.status(200).json({ message: 'Login bem-sucedido!' });
       var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
       console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
-     
-      // Configurando os detalhes do email
-      let mailOptions = {
-        from: 'jvpo.emailsender@gmail.com',
-        to: 'jvpomigliooliveira@gmail.com',
-        subject: 'Acesso ao Multi Usuario',
-        text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
-      };
+      const emailList = ['jvpomigliooliveira@gmail.com', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br'];
 
-       // Enviar o email
-      transporter.sendMail(mailOptions, function(error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email enviado: ' + info.response);
+      for (const email of emailList) {
+        // Configurando os detalhes do email
+        let mailOptions = {
+          from: 'jvpo.emailsender@gmail.com',
+          to: email,
+          subject: 'Acesso ao Multi Usuario',
+          text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
+        };
+        // Enviar o email
+        if (req.session.user != 'admin') {
+          transporter.sendMail(mailOptions, function(error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email enviado: ' + info.response);
+            }
+          });
         }
-      });
+      }
     } else {
       res.status(401).json({ message: 'Credenciais inválidas!' });
     }
@@ -334,6 +555,10 @@ app.post('/login', (req, res) => {
 
 //################################  Loop ################################//
 
-server.listen(PORT, () => {
-  console.log(`HTTP Server listening on port ${PORT}`);
+server.listen(443, '143.106.61.223', () => {
+  console.log(`HTTPS Server listening on port ${443}`);
+});
+
+httpServer.listen(80, '143.106.61.223', () => {
+  console.log(`HTTP Server listening on port ${80}`);
 });

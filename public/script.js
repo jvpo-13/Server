@@ -1,20 +1,48 @@
-document.getElementById('getCV').addEventListener('click', async () => {
-  try {
-      const response = await fetch('http://143.106.61.223:3000/getCV');
-      if (!response.ok) {
-          throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      console.log(data);
-      document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
-  } catch (error) {
-      console.error('Error fetching data:', error);
-  }
-});
 
-document.getElementById('getCL').addEventListener('click', async () => {
+let autoget = true;
+
+/*
+document.getElementById('getValues').addEventListener('click', async () => {
+    autoget = !autoget;
+});
+*/
+
+
+setInterval(getAllValues, 1000);
+
+async function getAllValues(){
+    if(autoget){
+        getCVValue();
+        getCLValue();
+        getCA1Value();
+        getCA2Value();
+        getCA3Value();
+        getVelocidade();
+        getTempo_Ligado();
+        getDistancia_Percorrida();
+        getNivel_Bateria();
+    }
+}
+
+async function getCVValue(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCL');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCV');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log(data);
+        document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        window.location.replace("/login");
+    }
+    //return data;
+}
+
+async function getCLValue(){
+    try {
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCL');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -24,54 +52,68 @@ document.getElementById('getCL').addEventListener('click', async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    //return data;
+}
 
-document.getElementById('getCA1').addEventListener('click', async () => {
+async function getCA1Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA1');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA1');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
         document.getElementById('dataCA1').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    //return data;
+}
 
-document.getElementById('getCA2').addEventListener('click', async () => {
+async function getCA2Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA2');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA2');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
         document.getElementById('dataCA2').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    //return data;
+}
 
-document.getElementById('getCA3').addEventListener('click', async () => {
+async function getCA3Value(){
     try {
-        const response = await fetch('http://143.106.61.223:3000/getCA3');
+        const response = await fetch('https://hd2d.fem.unicamp.br/getCA3');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
         document.getElementById('dataCA3').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-});
+    //return data;
+}
 
 document.getElementById('Start').addEventListener('click', async () => {
     let value = document.getElementById('NBolas').value;
+    if (value == '') { // Verifica se o campo está vazio
+        alert('Preencha o campo "Número de bolinhas desejado" para prosseguir');
+        return;
+    }else if (value%4 != 0){ // Verifica se o valor é múltiplo de 4
+        alert('Preencha o campo com um valor múltiplo de 4');
+        return;
+    }else if (value > 20){ // Verifica se o valor é maior que 20
+        alert('Preencha o campo com um valor menor ou igual a 20');
+        return;
+    }
     try {
-        const response = await fetch('http://143.106.61.223:3000/NBolas', {
+        const response = await fetch('https://hd2d.fem.unicamp.br/NBolas', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -84,21 +126,120 @@ document.getElementById('Start').addEventListener('click', async () => {
         }
 
         const data = await response.json();
-        document.getElementById('dataNBolas').innerText = JSON.stringify(data, null, 2);
+        //document.getElementById('dataNBolas').innerText = JSON.stringify(data, null, 2);
+        //console.log(data);
 
         // Outra chamada ao endpoint Start
         try {
-            const response = await fetch('http://143.106.61.223:3000/Start');
+            const response = await fetch('https://hd2d.fem.unicamp.br/Start');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            document.getElementById('dataStart').innerText = JSON.stringify(data, null, 2);
+            //document.getElementById('dataStart').innerText = JSON.stringify(data, null, 2);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     } catch (error) {
         console.error('Error fetching data:', error);
+        //alert('Servidor Node RED desligado, entre em contato com o administrador');
     }
 });
 
+
+async function getVelocidade(){
+    try {
+        const response = await fetch('https://hd2d.fem.unicamp.br/Velocidade');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        //console.log(data);
+        document.getElementById('Velocidade').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+    //return data;
+}
+
+
+async function getTempo_Ligado(){
+    try {
+        const response = await fetch('https://hd2d.fem.unicamp.br/Tempo_Ligado');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        //console.log(data);
+        document.getElementById('Tempo_Ligado').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+    //return data;
+}
+
+
+async function getDistancia_Percorrida(){
+    try {
+        const response = await fetch('https://hd2d.fem.unicamp.br/Distancia_Percorrida');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        //console.log(data);
+        document.getElementById('Distancia_Percorrida').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+    //return data;
+}
+
+
+async function getNivel_Bateria(){
+    try {
+        const response = await fetch('https://hd2d.fem.unicamp.br/Nivel_Bateria');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        //console.log(data);
+        document.getElementById('Nivel_Bateria').innerText = JSON.stringify(data, null, 2);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+    //return data;
+}
+
+// Adicione esta função
+function updateObserverCount() {
+    fetch('/observer-count')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('observerCount').innerText = 
+          `${data.count}/${data.maxCapacity}`;
+      });
+}
   
+// Chame na inicialização e atualize periodicamente
+document.addEventListener('DOMContentLoaded', () => {
+    updateObserverCount();
+    setInterval(updateObserverCount, 10000); // Atualiza a cada 10 segundos
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/check-session')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.user && !data.observer) {
+          window.location.href = '/login';
+        }
+        if (data.observer) {
+          document.getElementById('controlSection').style.display = 'none';
+          // Atualizar periodicamente o status da sessão
+          setInterval(() => {
+            fetch('/check-session').then(res => res.json()).then(sessionData => {
+              if (!sessionData.observer) window.location.reload();
+            });
+          }, 30000);
+        }
+    });
+});
