@@ -35,6 +35,7 @@ async function getCVValue(){
         document.getElementById('dataCV').innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         console.error('Error fetching data:', error);
+        window.location.replace("/login");
     }
     //return data;
 }

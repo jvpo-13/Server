@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratório Multiusuário - Aloee</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .login-box { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .product-card { background: white; border: 1px solid #ddd; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .color-box { width: 100%; height: 50px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Área de Login -->
+        <div class="login-box">
+            <h2>Acesso à API Aloee</h2>
+            <form id="loginForm">
+                <div>
+                    <label>Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div>
+                    <label>Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+            <div id="loginStatus" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Listagem de Produtos -->
+        <div>
+            <h2>Catálogo de Produtos</h2>
+            <div id="productGrid" class="product-grid"></div>
+            <div id="paginationInfo"></div>
+        </div>
+    </div>
+
+<script>
+const API_BASE_URL = 'https://api.aloee.it/v1';
+let currentToken = null;
+
+// Função de Login
+async function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/Login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) throw new Error('Falha no login');
+        
+        const data = await response.json();
+        currentToken = data.collection.items[0].data.token;
+        updateLoginStatus(true);
+        loadProducts();
+    } catch (error) {
+        console.error('Erro:', error);
+        updateLoginStatus(false, error.message);
+    }
+}
+
+// Carregar Produtos
+async function loadProducts() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/Product`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error('Erro ao carregar produtos');
+        
+        const data = await response.json();
+        renderProducts(data.collection);
+    } catch (error) {
+        console.error('Erro:', error);
+        document.getElementById('productGrid').innerHTML = 
+            `<div class="error">Erro ao carregar produtos: ${error.message}</div>`;
+    }
+}
+
+// Renderização de Produtos
+function renderProducts(collection) {
+    const productGrid = document.getElementById('productGrid');
+    productGrid.innerHTML = '';
+
+    collection.items.forEach(item => {
+        const product = item.data;
+        productGrid.innerHTML += `
+            <div class="product-card">
+                <h3>${product.name}</h3>
+                <div class="color-box" style="background-color: ${product.color}"></div>
+                <p>ID: ${product.id}</p>
+                <p>Unidade: ${product.unit}</p>
+                <p>Dependências: ${product.previousProductsDependency.length}</p>
+            </div>
+        `;
+    });
+
+    // Atualizar paginação
+    const pagination = collection.WExtra?.pagination;
+    if (pagination) {
+        document.getElementById('paginationInfo').innerHTML = `
+            <p>Página ${pagination.page} de ${pagination.pageCount} - 
+            Total de itens: ${pagination.totalRecs}</p>
+        `;
+    }
+}
+
+// Atualizar status do login
+function updateLoginStatus(success, message = '') {
+    const statusDiv = document.getElementById('loginStatus');
+    statusDiv.innerHTML = success 
+        ? '<p style="color: green;">✅ Login bem-sucedido!</p>'
+        : `<p style="color: red;">❌ Erro: ${message}</p>`;
+}
+
+// Event Listeners
+document.getElementById('loginForm').addEventListener('submit', handleLogin);
+</script>
+</body>
+</html>

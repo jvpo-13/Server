@@ -19,7 +19,6 @@ def capture_camera(camera_id):
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))  # Formato melhor para streaming
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Reduz latência
-
     
     while True:
         ret, frame = cap.read()

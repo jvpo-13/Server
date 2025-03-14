@@ -90,15 +90,17 @@ app.use((req, res, next) => {
   }
 
   const publicPaths = ['/', '/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG', '/public/favicon.ico', '/loginObserver'];
+  const loginPaths = ['/laboratorio', '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
+  const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/Start', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
 
-  if(!publicPaths.includes(req.path)){
+  if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
     console.log('Acesso não autorizado ao path:', req.path);
-    return res.status(404).send('página não encontrada');
+    return res.status(404).send('Página não encontrada');
   }
 
-  if (!req.session?.user && !req.session?.observer) {
+  if (!publicPaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
     console.log('Acesso não autorizado ao path:', req.path);
-    return res.redirect('/login');
+    return res.status(404).redirect('/login');
   }
 
   // Atualizar timestamp do observador
@@ -133,10 +135,7 @@ app.get('/', async (req, res) => {
       //Redireciona para a página desejada
       return res.redirect('/video/video_feed_2');
     }
-  } else if (req.session.user) {
-      return res.redirect('/laboratorio');
-  } else if (req.session.observer) {
-      return res.redirect('/laboratorio');
+    return res.redirect('/laboratorio');
   }
   return res.redirect('/login');
 });
@@ -146,9 +145,8 @@ app.get('/login', async (req, res) => {
 });
 
 app.get('/laboratorio', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'public', 'laboratorio.html'));
+  return res.sendFile(path.join(__dirname, 'thomas', 'laboratorio.html'));
 });
-
 
 
 //################################  Video Stream ################################//
