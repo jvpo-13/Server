@@ -7,12 +7,42 @@ const path = require('path');
 const express = require('express');
 const app = express();
 
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+// Configuração do Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API Multi-Usuário HD2D',
+      version: '1.0.0',
+      description: 'Documentação completa da API do sistema multi-usuário',
+    },
+    servers: [
+      { url: 'https://hd2d.fem.unicamp.br' },
+      { url: 'http://localhost:80' }
+    ],
+    components: {
+      securitySchemes: {
+        sessionCookie: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'labSession',
+          description: 'Cookie de sessão autenticada'
+        }
+      }
+    }
+  },
+  apis: ['./server.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const session = require('express-session');
 
 // Habilita o CORS
-//const cors = require('cors');
-//app.use(cors());
 const cors = require('cors');
 app.use(cors({
   origin: 'https://hd2d.fem.unicamp.br',
@@ -118,7 +148,31 @@ app.use((req, res, next) => {
   next();
 });
 
-
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Página inicial com autenticação automática
+ *     tags: [Autenticação]
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: password
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *     responses:
+ *       302:
+ *         description: Redirecionamento baseado nas credenciais
+ *       500:
+ *         description: Erro interno
+ */
 app.get('/', async (req, res) => {
   const { username, password, page } = req.query; // Captura credenciais enviadas na query string
   // Valide as credenciais (exemplo básico)
@@ -143,25 +197,77 @@ app.get('/', async (req, res) => {
   return res.redirect('/home');
 });
 
+
 app.get('/login', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  return res.sendFile(path.join(__dirname, 'thomas', 'login.html'));
 });
 
+/**
+ * @swagger
+ * /thomas:
+ *   get:
+ *     summary: Página principal do sistema Thomas
+ *     tags: [Navegação]
+ *     responses:
+ *       200:
+ *         description: Retorna a página Thomas
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
 app.get('/thomas', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'thomas', 'thomas.html'));
 });
 
+/**
+ * @swagger
+ * /pipefa:
+ *   get:
+ *     summary: Página do sistema Pipefa
+ *     tags: [Navegação]
+ *     responses:
+ *       200:
+ *         description: Retorna a página Pipefa
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
 app.get('/pipefa', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'pipefa', 'pipefa.html'));
 });
 
+/**
+ * @swagger
+ * /home:
+ *   get:
+ *     summary: Página inicial pública
+ *     tags: [Navegação]
+ *     responses:
+ *       200:
+ *         description: Retorna a página home
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ */
 app.get('/home', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
 //################################  Video Stream ################################//
 
-// Remova os proxies individuais e use apenas:
+/**
+ * @swagger
+ * /video:
+ *   get:
+ *     summary: Proxy para transmissão de vídeo
+ *     tags: [Video]
+ *     responses:
+ *       200:
+ *         description: Conexão de vídeo estabelecida
+ */
 app.use('/video', createProxyMiddleware({ 
   target: 'http://localhost:5000',
   changeOrigin: true,
@@ -170,73 +276,98 @@ app.use('/video', createProxyMiddleware({
 
 //################################  Requisição de Dados ################################//
 
-// Outros Endpoints Existentes
-app.get('/data', async (req, res) => {
+
+/**
+ * @swagger
+ * /getAllData:
+ *   get:
+ *     summary: Obter todos os dados do sistema
+ *     description: Retorna todos os valores de operação do sistema em formato JSON
+ *     tags: [Dados]
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Dados completos do sistema
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 CV:
+ *                   type: boolean
+ *                   example: true
+ *                 CL:
+ *                   type: boolean
+ *                   example: false
+ *                 CA1:
+ *                   type: boolean
+ *                   example: true
+ *                 CA2:
+ *                   type: boolean
+ *                   example: false
+ *                 CA3:
+ *                   type: boolean
+ *                   example: true
+ *                 Velocidade:
+ *                   type: number
+ *                   format: float
+ *                   example: 25.5
+ *                 Tempo_Ligado:
+ *                   type: number
+ *                   example: 120
+ *                 Distancia_Percorrida:
+ *                   type: number
+ *                   example: 1500
+ *                 Nivel_Bateria:
+ *                   type: number
+ *                   example: 75
+ *                 status:
+ *                   type: string
+ *                   example: "ativo"
+ *                 timestamp:
+ *                   type: integer
+ *                   example: 1718901234567
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno ao buscar dados completos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch complete data"
+ */
+app.get('/getAllData', async (req, res) => {
   try {
-    const response = await fetch('http://localhost:1880/data');
+    const response = await fetch('http://localhost:1880/getData');
     const data = await response.json();
     res.json(data);
   } catch (error) {
     console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
+    res.status(500).json({ error: 'Failed to fetch complete data' });
   }
 });
 
-app.get('/getCV', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getCV');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/getCL', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getCL');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/getCA1', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getCA1');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/getCA2', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getCA2');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/getCA3', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getCA3');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
+/**
+ * @swagger
+ * /Start:
+ *   get:
+ *     summary: Iniciar sistema
+ *     tags: [Controle]
+ *     security:
+ *       - sessionCookie: []
+ *     responses:
+ *       200:
+ *         description: Sistema iniciado com sucesso
+ *       403:
+ *         description: Acesso não autorizado
+ *       500:
+ *         description: Erro interno
+ */
 app.get('/Start', requireUser, async (req, res) => {
   try {
     const response = await fetch('http://localhost:1880/Start');
@@ -248,6 +379,31 @@ app.get('/Start', requireUser, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /NBolas:
+ *   put:
+ *     summary: Definir número de bolas
+ *     tags: [Controle]
+ *     security:
+ *       - sessionCookie: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Valor atualizado
+ *       400:
+ *         description: Número inválido
+ *       500:
+ *         description: Erro interno
+ */
 app.put('/NBolas', requireUser, async (req, res) => {
   try {
     let { value } = req.body;  // Extrai o valor do body
@@ -274,77 +430,6 @@ app.put('/NBolas', requireUser, async (req, res) => {
   }
 });
 
-app.put('/getCV', async (req, res) => {
-  try {
-    console.log('PUT request received:', req.body);
-    let { value } = req.body;  // Extrai o valor do body
-
-    value = parseInt(value);  // Converte a string para número
-    
-    if (isNaN(value)) {
-      return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
-    }
-
-    const response = await fetch('http://localhost:1880/NBolas', {
-      method: 'PUT',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ value })
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error performing PUT request:', error);
-    res.status(500).send('Error performing PUT request');
-  }
-});
-
-app.get('/Velocidade', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getVelocidade');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/Tempo_Ligado', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getTempo_Ligado');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/Distancia_Percorrida', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getDistancia_Percorrida');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-app.get('/Nivel_Bateria', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1880/getNivel_Bateria');
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
 //################################  Cookies ################################//
 // For todays date;
 Date.prototype.today = function () { 
@@ -356,7 +441,29 @@ Date.prototype.timeNow = function () {
    return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
 }
 
-
+/**
+ * @swagger
+ * /User:
+ *   put:
+ *     summary: Registrar usuário
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               value:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Usuário registrado
+ *       400:
+ *         description: Nome inválido
+ *       500:
+ *         description: Erro interno
+ */
 app.put('/User', async (req, res) => {
   try {
     let { value } = req.body;  // Extrai o nome do usuário
@@ -414,7 +521,6 @@ for (const senha of listaSenhas) {
 let isOccupied = false;
 let lastActiveTime = null;
 
-// Middleware para verificar sessão
 app.get('/check-session', (req, res) => {
   res.json({
     user: req.session.user,
@@ -442,6 +548,25 @@ setInterval(() => {
 const activeObservers = new Map(); // Armazena sessionID e timestamp
 let observerCount = 0;
 
+/**
+ * @swagger
+ * /observer-count:
+ *   get:
+ *     summary: Contagem de observadores ativos
+ *     tags: [Monitoramento]
+ *     responses:
+ *       200:
+ *         description: Dados de contagem
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 maxCapacity:
+ *                   type: integer
+ */
 app.get('/observer-count', (req, res) => {
   res.json({
     count: observerCount,
@@ -462,7 +587,29 @@ setInterval(() => {
 }, 60000);
 
 //################################  Autenticação ################################//
-// Rota para login observer
+/**
+ * @swagger
+ * /loginObserver:
+ *   post:
+ *     summary: Login como observador
+ *     tags: [Autenticação]
+ *     responses:
+ *       200:
+ *         description: Login observador realizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 redirect:
+ *                   type: string
+ *       403:
+ *         description: Sistema disponível para login completo
+ *       500:
+ *         description: Erro interno
+ */
 app.post('/loginObserver', (req, res) => {
   try {
     if (isOccupied) {
@@ -497,6 +644,33 @@ app.post('/loginObserver', (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Autenticação de usuário
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login bem-sucedido
+ *       401:
+ *         description: Credenciais inválidas
+ *       403:
+ *         description: Sistema em uso
+ *       500:
+ *         description: Erro no servidor
+ */
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 

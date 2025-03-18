@@ -32,11 +32,12 @@
 
   <!-- Meta Tags Generated via https://www.opengraph.xyz -->
   <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="thomas.css">
   <link rel="canonical" link="https://hd2d.fem.unicamp.br/thomas.html">
 
 </head>
-<body onload="checkCookie()">
+<body onload="init()">
+  <div id="connectionStatus" class="connection-status">Conectando...</div>
   <div class="container">
     <h1>Laboratório Multiusuário</h1>
 
@@ -71,19 +72,19 @@
       <div class="states-grid metricas-grid">
         <div class="state-item">
           <h3>Velocidade</h3>
-          <div class="data" id="Velocidade">Carregando...</div>
+          <div class="data" id="dataVelocidade">Carregando...</div>
         </div>
         <div class="state-item">
           <h3>Tempo Ligado</h3>
-          <div class="data" id="Tempo_Ligado">Carregando...</div>
+          <div class="data" id="dataTempo_Ligado">Carregando...</div>
         </div>
         <div class="state-item">
           <h3>Distância Percorrida</h3>
-          <div class="data" id="Distancia_Percorrida">Carregando...</div>
+          <div class="data" id="dataDistancia_Percorrida">Carregando...</div>
         </div>
         <div class="state-item">
           <h3>Nível da Bateria</h3>
-          <div class="data" id="Nivel_Bateria">Carregando...</div>
+          <div class="data" id="dataNivel_Bateria">Carregando...</div>
         </div>
         <div class="state-item">
           <h3>Observadores Ativos</h3>

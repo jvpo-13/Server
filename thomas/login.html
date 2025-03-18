@@ -32,29 +32,66 @@
 
   <!-- Meta Tags Generated via https://www.opengraph.xyz -->
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
   <link rel="canonical" link="https://hd2d.fem.unicamp.br/login.html">
   
 </head>
 <body>
+  <div class="main-banner">
+    <img src="LMU.JPG" alt="Laboratório Multiusuário" class="banner-image">
+  </div>
+  <div class="content-wrapper">
+    <!-- Seção de Informações -->
+    <div class="info-section">
+      <div class="info-card">
+        <h2><i class="fas fa-info-circle"></i> Sobre o Sistema</h2>
+        <p>Sistema de controle remoto para operação e monitoramento do laboratório multiusuário.</p>
+      </div>
+
+      <div class="info-card">
+        <h2><i class="fas fa-user-shield"></i> Conta de Acesso</h2>
+        <ul>
+          <li><i class="fas fa-check"></i> Requer credenciais institucionais</li>
+          <li><i class="fas fa-check"></i> Acesso prioritário a controles</li>
+          <li><i class="fas fa-check"></i> Histórico de operações</li>
+        </ul>
+      </div>
+
+      <div class="info-card credits">
+        <h2><i class="fas fa-award"></i> Créditos</h2>
+        <p>Desenvolvimento por João Victor Pomiglio de Oliveira</p>
+        Propiedade do Laboratório de Projetos de Sistemas de Produção<br>
+        Professor responsavel Pf. Robert Cooper<br>
+        FEM/UNICAMP - 2025</p>
+      </div>
+    </div>
   <div class="login-container">
-    <h1>Login</h1><br>
+    <h1>Laboratório Multiusuário</h1>
     <form id="loginForm">
       <label for="username">Usuário:</label>
       <input type="text" id="username" name="username" required autocomplete="username">
-      <br><br>
+      
       <label for="password">Senha:</label>
       <input type="password" id="password" name="password" required autocomplete="current-password">
-      <br><br>
-      <button type="button" onclick="loginUser()">Entrar</button>
-      <br><br>
-      <button type="button" onclick="loginObserver()">Entrar como Observador</button>
+
+      <div class="button-group">
+        <button type="button" class="login-btn" onclick="loginUser()">
+          <i class="fas fa-sign-in-alt"></i>
+          Entrar
+        </button>
+        
+        <button type="button" class="login-btn observer" onclick="loginObserver()">
+          <i class="fas fa-eye"></i>
+          Entrar como Observador
+        </button>
+      </div>
     </form>  
   </div>
-  <div>
-    <img src="LMU.JPG" alt="Imagem do brinquedo utilizado no laboratorio" class="imagem"/>
-  </div>
+  
+  <!-- Adicione o link para Font Awesome no cabeçalho -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <script src="login.js" defer></script>
 </body>
 </html>
