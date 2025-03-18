@@ -14,7 +14,7 @@ async function loginUser() {
 
   if (response.ok) {
     // Login bem-sucedido
-    window.location.href = '/laboratorio';
+    window.location.href = '/thomas';
   } else {
     // Exibir erro
     alert(data.message || 'Erro ao fazer login');

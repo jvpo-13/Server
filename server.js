@@ -30,7 +30,9 @@ const server = https.createServer(options, app);
 
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
+const thomasPath = path.join(__dirname, 'thomas');
 app.use('/', express.static(publicPath));
+app.use('/', express.static(thomasPath));
 app.use(express.json());
 
 // HTTPS
@@ -89,10 +91,10 @@ app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   }
 
-  const publicPaths = ['/', '/login', '/login.html', '/styles.css', '/login.js', '/LMU.JPG', '/public/favicon.ico', '/loginObserver'];
-  const loginPaths = ['/laboratorio', '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
+  const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
+  const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
   const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/Start', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
-
+  /*
   if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
     console.log('Acesso não autorizado ao path:', req.path);
     return res.status(404).send('Página não encontrada');
@@ -102,6 +104,7 @@ app.use((req, res, next) => {
     console.log('Acesso não autorizado ao path:', req.path);
     return res.status(404).redirect('/login');
   }
+    */
 
   // Atualizar timestamp do observador
   if (req.session?.observer && activeObservers.has(req.sessionID)) {
@@ -135,19 +138,26 @@ app.get('/', async (req, res) => {
       //Redireciona para a página desejada
       return res.redirect('/video/video_feed_2');
     }
-    return res.redirect('/laboratorio');
+    return res.redirect('/thomas');
   }
-  return res.redirect('/login');
+  return res.redirect('/home');
 });
 
 app.get('/login', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('/laboratorio', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'thomas', 'laboratorio.html'));
+app.get('/thomas', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'thomas', 'thomas.html'));
 });
 
+app.get('/pipefa', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'pipefa', 'pipefa.html'));
+});
+
+app.get('/home', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
 
 //################################  Video Stream ################################//
 
@@ -472,7 +482,7 @@ app.post('/loginObserver', (req, res) => {
         console.log('Observador conectado:', req.sessionID);
         return res.json({
           message: 'Login observador realizado',
-          redirect: '/laboratorio'
+          redirect: '/thomas'
         });
       });
       
