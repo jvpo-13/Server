@@ -44,11 +44,32 @@ const session = require('express-session');
 
 // Habilita o CORS
 const cors = require('cors');
+/*
 app.use(cors({
   origin: 'https://hd2d.fem.unicamp.br',
   credentials: true,
   methods: ['GET', 'POST', 'PUT']
 }));
+*/
+app.use(cors({
+  origin: ['https://hd2d.fem.unicamp.br', 'http://143.106.61.229:80'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use((req, res, next) => {
+  const originalSend = res.send;
+  res.send = function (body) {
+    if (typeof body === 'string') {
+      const ext = path.extname(req.path);
+      if (ext === '.css') this.set('Content-Type', 'text/css');
+      if (ext === '.js') this.set('Content-Type', 'application/javascript');
+    }
+    originalSend.call(this, body);
+  };
+  next();
+});
 
 const options = {
   key: fs.readFileSync('C:/Certbot/live/hd2d.fem.unicamp.br/privkey.pem'),
@@ -274,8 +295,64 @@ app.use('/video', createProxyMiddleware({
   ws: true
 }));
 
-//################################  Requisição de Dados ################################//
+//################################  TCP Socket Server ################################//
+const net = require('net');
+var receivedData = {};
+// Cria servidor TCP para comunicação com Plant Simulation
+const tcpServer = net.createServer((socket) => {
+  console.log('Plant Simulation connected:', socket.remoteAddress, socket.remotePort);
 
+  // Configura codificação
+  socket.setEncoding('utf8');
+
+  // Handler de dados recebidos
+  socket.on('data', (data) => {
+    try {
+      const rawData = data.toString().trim();
+      console.log('Dados brutos recebidos:', rawData);
+
+      // Parseia JSON
+      receivedData = JSON.parse(rawData);
+      console.log('Dados recebidos:', receivedData);
+      
+      // Valida token
+      if(receivedData.token !== '123456') {
+          return socket.write(JSON.stringify({
+              status: 401,
+              message: 'Token inválido!'
+          }) + '\n');
+      }
+
+      // Resposta de sucesso
+      socket.write(JSON.stringify({
+          status: 200,
+          message: 'Dados processados com sucesso',
+          received: receivedData
+      }) + '\n');
+
+    } catch (error) {
+        console.error('Erro no processamento:', error);
+        socket.write(JSON.stringify({
+            status: 500,
+            error: 'Formato de dados inválido'
+        }) + '\n');
+    }
+  });
+
+  // Handler de desconexão
+  socket.on('end', () => {
+    console.log('Plant Simulation disconnected');
+  });
+});
+
+// Inicia servidor TCP na porta 30000
+const port = 30000;
+const host = '143.106.61.223'
+tcpServer.listen(port, host, () => {
+  console.log('TCP Server listening on ', host,': ', port);
+});
+
+//################################  Requisição de Dados ################################//
 
 /**
  * @swagger
@@ -343,14 +420,38 @@ app.use('/video', createProxyMiddleware({
  */
 app.get('/getAllData', async (req, res) => {
   try {
+    /*
     const response = await fetch('http://localhost:1880/getData');
-    const data = await response.json();
-    res.json(data);
+    const data = await response.json();*/
+    res.json(receivedData);
   } catch (error) {
     console.error('Error fetching data:', error);
     res.status(500).json({ error: 'Failed to fetch complete data' });
   }
 });
+
+app.use('/girafinha', express.static(path.join(__dirname, 'public')));
+
+app.use('/bracorobotico', createProxyMiddleware({ 
+  target: 'http://143.106.61.229:80/',
+  changeOrigin: true,
+  ws: true,/*
+  pathRewrite: {
+    '^/bracorobotico': '/', // Remove o prefixo da rota
+  },*/
+  onProxyRes: (proxyRes) => {
+    // Corrige headers de conteúdo para recursos estáticos
+    if (proxyRes.headers['content-type']?.includes('text/html')) {
+      const path = proxyRes.req.path;
+      if (path.endsWith('.css')) {
+        proxyRes.headers['content-type'] = 'text/css';
+      } else if (path.endsWith('.js')) {
+        proxyRes.headers['content-type'] = 'application/javascript';
+      }
+    }
+  }
+}));
+
 
 /**
  * @swagger
@@ -413,16 +514,16 @@ app.put('/NBolas', requireUser, async (req, res) => {
     if (isNaN(value)) {
       return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
     }
-
+    /*
     const response = await fetch('http://localhost:1880/NBolas', {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({ value })
-    });
+    });*/
 
-    const data = await response.json();
+    const data = res.status(200).json('Bolas definidas com sucesso');
     res.json(data);
   } catch (error) {
     console.error('Error performing PUT request:', error);
