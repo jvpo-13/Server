@@ -75,7 +75,7 @@ async function getAllValues() {
 
 // Função auxiliar para formatar valores
 function formatValue(value, key) { // Recebe key como parâmetro
-    if(typeof value === 'boolean') return value ? 'LIGADO' : 'DESLIGADO';
+    if(typeof value === 'boolean') return value ? 'Em Espera' : 'Em Operação';
     if(typeof value === 'number') {
         const units = {
             Velocidade: ' km/h',
@@ -91,6 +91,7 @@ function formatValue(value, key) { // Recebe key como parâmetro
 
 document.getElementById('Start').addEventListener('click', async () => {
     let value = document.getElementById('NBolas').value;
+
     if (value == '') { // Verifica se o campo está vazio
         alert('Preencha o campo "Número de bolinhas desejado" para prosseguir');
         return;
@@ -101,36 +102,27 @@ document.getElementById('Start').addEventListener('click', async () => {
         alert('Preencha o campo com um valor menor ou igual a 20');
         return;
     }
+
     try {
-        const response = await fetch('https://hd2d.fem.unicamp.br/NBolas', {
+        // Envia apenas NBOLAS
+        const nbolasResponse = await fetch('https://hd2d.fem.unicamp.br/NBolas', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({value})  // O valor é enviado no corpo da requisição
+            body: JSON.stringify({value})
         });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        // Envia START separadamente
+        const startResponse = await fetch('https://hd2d.fem.unicamp.br/Start');
+        
+        if (!nbolasResponse.ok || !startResponse.ok) {
+            throw new Error('Erro no comando');
         }
 
-        const data = await response.json();
-        //document.getElementById('dataNBolas').innerText = JSON.stringify(data, null, 2);
-        //console.log(data);
-
-        // Outra chamada ao endpoint Start
-        try {
-            const response = await fetch('https://hd2d.fem.unicamp.br/Start');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            //document.getElementById('dataStart').innerText = JSON.stringify(data, null, 2);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
     } catch (error) {
-        console.error('Error fetching data:', error);
-        //alert('Servidor Node RED desligado, entre em contato com o administrador');
+        console.error('Error:', error);
+        alert('Erro na comunicação com o Plant Simulation');
     }
 });
 

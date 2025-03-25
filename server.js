@@ -298,8 +298,11 @@ app.use('/video', createProxyMiddleware({
 //################################  TCP Socket Server ################################//
 const net = require('net');
 var receivedData = {};
+const tcpConnections = new Map();
 // Cria servidor TCP para comunicação com Plant Simulation
 const tcpServer = net.createServer((socket) => {
+  const connectionId = `${socket.remoteAddress}:${socket.remotePort}`;
+  tcpConnections.set(connectionId, socket);
   console.log('Plant Simulation connected:', socket.remoteAddress, socket.remotePort);
 
   // Configura codificação
@@ -324,11 +327,14 @@ const tcpServer = net.createServer((socket) => {
       }
 
       // Resposta de sucesso
+      /*
       socket.write(JSON.stringify({
+          token: "123456",
           status: 200,
           message: 'Dados processados com sucesso',
           received: receivedData
       }) + '\n');
+      */
 
     } catch (error) {
         console.error('Erro no processamento:', error);
@@ -341,6 +347,7 @@ const tcpServer = net.createServer((socket) => {
 
   // Handler de desconexão
   socket.on('end', () => {
+    tcpConnections.delete(connectionId);
     console.log('Plant Simulation disconnected');
   });
 });
@@ -457,34 +464,41 @@ app.use('/bracorobotico', createProxyMiddleware({
  * @swagger
  * /Start:
  *   get:
- *     summary: Iniciar sistema
+ *     summary: Iniciar sistema via TCP
  *     tags: [Controle]
  *     security:
  *       - sessionCookie: []
  *     responses:
  *       200:
- *         description: Sistema iniciado com sucesso
- *       403:
- *         description: Acesso não autorizado
+ *         description: Comando START enviado ao Plant Simulation
  *       500:
  *         description: Erro interno
  */
 app.get('/Start', requireUser, async (req, res) => {
   try {
-    const response = await fetch('http://localhost:1880/Start');
-    const data = await response.json();
-    res.json(data);
+    const command = {
+      token: '123456',
+      command: 'START',
+      value: 1
+    };
+
+    tcpConnections.forEach((socket) => {
+      socket.write(JSON.stringify(command) + '\n');
+    });
+
+    res.json({ status: 'START command sent' });
   } catch (error) {
-    console.error('Error performing other action:', error);
-    res.status(500).send('Error performing other action');
+    console.error('Error sending START command:', error);
+    res.status(500).send('Error sending command');
   }
 });
 
+// server.js
 /**
  * @swagger
  * /NBolas:
  *   put:
- *     summary: Definir número de bolas
+ *     summary: Envia número de bolas via TCP
  *     tags: [Controle]
  *     security:
  *       - sessionCookie: []
@@ -499,35 +513,35 @@ app.get('/Start', requireUser, async (req, res) => {
  *                 type: integer
  *     responses:
  *       200:
- *         description: Valor atualizado
+ *         description: Comando NBolas enviado
  *       400:
- *         description: Número inválido
+ *         description: Valor inválido
  *       500:
  *         description: Erro interno
  */
 app.put('/NBolas', requireUser, async (req, res) => {
   try {
-    let { value } = req.body;  // Extrai o valor do body
+    let { value } = req.body;
+    value = parseInt(value);
 
-    value = parseInt(value);  // Converte a string para número
-    
     if (isNaN(value)) {
-      return res.status(400).json({ error: 'Invalid number' });  // Verifica se a conversão falhou
+      return res.status(400).json({ error: 'Número inválido' });
     }
-    /*
-    const response = await fetch('http://localhost:1880/NBolas', {
-      method: 'PUT',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ value })
-    });*/
 
-    const data = res.status(200).json('Bolas definidas com sucesso');
-    res.json(data);
+    const command = {
+      token: '123456',
+      command: 'NBOLAS',
+      value: value
+    };
+
+    tcpConnections.forEach((socket) => {
+      socket.write(JSON.stringify(command) + '\n');
+    });
+
+    res.json({ status: 'NBOLAS command sent', value });
   } catch (error) {
-    console.error('Error performing PUT request:', error);
-    res.status(500).send('Error performing PUT request');
+    console.error('Error sending NBOLAS command:', error);
+    res.status(500).send('Error sending command');
   }
 });
 
