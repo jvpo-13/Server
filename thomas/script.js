@@ -1,4 +1,3 @@
-
 let autoget = true;
 
 /*
@@ -52,7 +51,7 @@ async function getAllValues() {
         Object.keys(fullData).forEach(key => {
             const element = document.getElementById(`data${key}`);
             if(element) {
-                element.innerText = this.formatValue(fullData[key]);
+                element.innerText = formatValue(fullData[key], key); // Passa a chave como segundo parâmetro
                 
                 // Adicione lógica específica para cada tipo de dado se necessário
                 if(key === 'CV' || key === 'CL' || key.startsWith('CA')) {
@@ -76,15 +75,20 @@ async function getAllValues() {
 // Função auxiliar para formatar valores
 function formatValue(value, key) { // Recebe key como parâmetro
     if(typeof value === 'boolean') return value ? 'Em Espera' : 'Em Operação';
-    if(typeof value === 'number') {
-        const units = {
-            Velocidade: ' km/h',
-            Tempo_Ligado: ' horas',
-            Distancia_Percorrida: ' metros',
-            Nivel_Bateria: '%'
-        };
-        const unit = units[key] || ''; // Usa o parâmetro key
-        return Number(value.toFixed(2)) + unit;
+    // Converte para número se for string
+
+    if (typeof value === 'string') {
+        const numericValue = parseFloat(value);
+        if (!isNaN(numericValue)) {
+            const units = {
+                Velocidade: ' mm/s',
+                Tempo_Ligado: ' segundos',
+                Distancia_Percorrida: ' metros',
+                Nivel_Bateria: ' volts'
+            };
+            const unit = units[key] || ''; // Usa o parâmetro key
+            return Number(value).toFixed(2) + unit;
+        }
     }
     return value;
 }

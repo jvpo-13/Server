@@ -9,7 +9,7 @@ app = Flask(__name__)
 camera_buffers = {
     0: {"frame": None, "lock": threading.Lock()},
     1: {"frame": None, "lock": threading.Lock()},
-    2: {"frame": None, "lock": threading.Lock()}
+    #2: {"frame": None, "lock": threading.Lock()}
 }
 
 def capture_camera(camera_id):
@@ -48,10 +48,11 @@ def video_feed_0():
 def video_feed_1():
     return Response(generate_feed(1), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+'''
 @app.route('/video_feed_2')
 def video_feed_2():
     return Response(generate_feed(2), mimetype='multipart/x-mixed-replace; boundary=frame')
-
+'''
 if __name__ == '__main__':
     # Inicia threads de captura para cada câmera
     for cam_id in [0, 1, 2]:

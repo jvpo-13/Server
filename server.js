@@ -338,10 +338,12 @@ const tcpServer = net.createServer((socket) => {
 
     } catch (error) {
         console.error('Erro no processamento:', error);
+        /*
         socket.write(JSON.stringify({
             status: 500,
             error: 'Formato de dados inválido'
         }) + '\n');
+         */
     }
   });
 
