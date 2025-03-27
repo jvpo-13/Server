@@ -106,7 +106,7 @@ app.use(session({
 
 const requireUser = (req, res, next) => {
   if (req.session.user) return next();
-  res.status(403).send('Acesso requer autenticação completa');
+  res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
 };
 
 /*
@@ -238,7 +238,7 @@ app.get('/login', async (req, res) => {
  *             schema:
  *               type: string
  */
-app.get('/thomas', async (req, res) => {
+app.get('/thomas', requireUser, async (req, res) => {
   return res.sendFile(path.join(__dirname, 'thomas', 'thomas.html'));
 });
 
