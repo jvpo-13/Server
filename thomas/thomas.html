@@ -100,9 +100,18 @@
         <!--div class="data" id="dataNBolas"></div-->
   
         <button class="button start-button" id="Start">Iniciar</button>
-        <div class="data" id="dataStart"></div>
+        
+        <div class="data" id="dataStart"></div> 
       </div>
-    </div>    
+    </div> 
+    <button class="button download-button" id="downloadLog" style="display: none;">Exportar para Excel</button>  
+    
+    <div class="download-section">
+      <h2>Arquivos do Sistema</h2>
+      <button class="button zip-button" onclick="window.open('/download-files', '_blank')">
+        Baixar Todos os Arquivos (ZIP)
+      </button>
+    </div>
 
     <h2>Gêmeo Digital</h2>
     <div id="threejs-container"></div>

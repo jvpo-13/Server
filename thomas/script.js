@@ -13,8 +13,8 @@ function init(){
 
 
 setInterval(getAllValues, 1000);
- // Mostra estado de conexão
 
+ // Mostra estado de conexão
 let connectionTimeout;
 
 function updateConnectionStatus(connected) {
@@ -61,6 +61,13 @@ async function getAllValues() {
         });
 
         // Se precisar usar os dados em outros lugares
+
+        const downloadBtn = document.getElementById('downloadLog');
+        if (downloadBtn) {
+            console.log('Atividade:', fullData['active']);
+            downloadBtn.style.display = fullData['active'] === true ? 'block' : 'none';
+            //downloadBtn.style.display = Object.keys(fullData).length > 0 ? 'block' : 'none';
+        }
         return fullData;
 
     } catch (error) {
@@ -71,6 +78,24 @@ async function getAllValues() {
         }
     }
 }
+
+function startLogging() {
+    logInterval = setInterval(async () => {
+      if (isLogging && Object.keys(receivedData).length > 0) {
+        const entry = {
+          timestamp: new Date().toISOString(),
+          ...receivedData
+        };
+        logData.push(entry);
+        
+        // Atualiza arquivo XLS
+        const workbook = XLSX.readFile(logFilePath);
+        const worksheet = workbook.Sheets["Dados Operacionais"];
+        XLSX.utils.sheet_add_json(worksheet, [entry], {header: ["timestamp", ...Object.keys(receivedData)], skipHeader: true, origin: -1});
+        XLSX.writeFile(workbook, logFilePath);
+      }
+    }, 5000); // Atualiza a cada 5 segundos
+  }
 
 // Função auxiliar para formatar valores
 function formatValue(value, key) { // Recebe key como parâmetro
@@ -130,7 +155,11 @@ document.getElementById('Start').addEventListener('click', async () => {
     }
 });
 
-// Adicione esta função
+document.getElementById('downloadLog').addEventListener('click', () => {
+    const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+    window.open(`https://hd2d.fem.unicamp.br/download-log?t=${timestamp}`, '_blank');
+  });
+
 function updateObserverCount() {
     fetch('/observer-count')
       .then(res => res.json())

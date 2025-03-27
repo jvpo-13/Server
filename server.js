@@ -10,6 +10,7 @@ const app = express();
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
+
 // Configuração do Swagger
 const swaggerOptions = {
   definition: {
@@ -488,13 +489,23 @@ app.get('/Start', requireUser, async (req, res) => {
       socket.write(JSON.stringify(command) + '\n');
     });
 
+    // Inicia o registro do log
+    isLogging = true;
+    logData = [];
+    startLogging();
+
+    //Cria estrutura inicial do Excel
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet([]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Dados Operacionais");
+    XLSX.writeFile(workbook, logFilePath);
+
     res.json({ status: 'START command sent' });
   } catch (error) {
     console.error('Error sending START command:', error);
     res.status(500).send('Error sending command');
   }
 });
-
 // server.js
 /**
  * @swagger
@@ -547,6 +558,109 @@ app.put('/NBolas', requireUser, async (req, res) => {
   }
 });
 
+
+//################################ XLSX ################################//
+
+const XLSX = require('xlsx');
+let isLogging = false;
+let logData = [];
+let logInterval;
+const logFilePath = path.join(__dirname, 'operation_log.xlsx');
+
+function startLogging() {
+  logInterval = setInterval(async () => {
+    if (isLogging && Object.keys(receivedData).length > 0) {
+      const entry = {
+        timestamp: new Date().toISOString(),
+        ...receivedData
+      };
+      logData.push(entry);
+      
+      // Atualiza arquivo XLS
+      const workbook = XLSX.readFile(logFilePath);
+      const worksheet = workbook.Sheets["Dados Operacionais"];
+      XLSX.utils.sheet_add_json(worksheet, [entry], {header: ["timestamp", ...Object.keys(receivedData)], skipHeader: true, origin: -1});
+      XLSX.writeFile(workbook, logFilePath);
+    }
+  }, 5000); // Atualiza a cada 5 segundos
+}
+
+/**
+ * @swagger
+ * /download-log:
+ *   get:
+ *     summary: Download do log de operação
+ *     tags: [Dados]
+ *     security:
+ *       - sessionCookie: []
+ *     responses:
+ *       200:
+ *         description: Arquivo XLS de log
+ *         content:
+ *           application/vnd.ms-excel:
+ *             schema:
+ *               type: string
+ *       404:
+ *         description: Arquivo não encontrado
+ */
+app.get('/download-log', requireUser, (req, res) => {
+  if (!fs.existsSync(logFilePath)) {
+    return res.status(404).send('Arquivo de log não disponível');
+  }
+  
+  res.download(logFilePath, `operacao_${Date.now()}.xlsx`, (err) => {
+    if (err) console.error('Erro no download:', err);
+  });
+});
+
+//################################  Arquivos para download ################################//
+
+
+const archiver = require('archiver');
+
+// Cria rota para download dos arquivos
+/**
+ * @swagger
+ * /download-files:
+ *   get:
+ *     summary: Download de todos os arquivos em formato ZIP
+ *     tags: [Dados]
+ *     responses:
+ *       200:
+ *         description: Arquivo ZIP com todos os arquivos
+ *         content:
+ *           application/zip:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       500:
+ *         description: Erro ao gerar o ZIP
+ */
+app.get('/download-files', (req, res) => {
+  try {
+    // Configura o caminho da pasta com os arquivos
+    const folderPath = path.join(__dirname, 'DataSafeMV');
+    
+    // Cria o arquivo ZIP
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Máxima compressão
+    });
+
+    // Configura headers da resposta
+    res.attachment('Dados_do_Sistema.zip');
+    archive.pipe(res);
+
+    // Adiciona todos os arquivos da pasta ao ZIP
+    archive.directory(folderPath, false);
+
+    // Finaliza a criação do ZIP
+    archive.finalize();
+
+  } catch (error) {
+    console.error('Erro ao gerar ZIP:', error);
+    res.status(500).send('Erro ao gerar arquivo ZIP');
+  }
+});
 //################################  Cookies ################################//
 // For todays date;
 Date.prototype.today = function () { 
@@ -653,7 +767,7 @@ app.use((req, res, next) => {
 
 // Verificar inatividade a cada minuto
 setInterval(() => {
-  if (isOccupied && (Date.now() - lastActiveTime) > 15*60*1000) {
+  if (isOccupied && (Date.now() - lastActiveTime) > 60*1000) {
     isOccupied = false;
     console.log('Sistema liberado por inatividade');
   }
@@ -695,7 +809,7 @@ app.get('/observer-count', (req, res) => {
 setInterval(() => {
   const now = Date.now();
   activeObservers.forEach((timestamp, sessionID) => {
-    if (now - timestamp > 15 * 60 * 1000) { // 15 minutos de inatividade
+    if (now - timestamp > 60 * 1000) { // 1 minuto de inatividade
       activeObservers.delete(sessionID);
       observerCount = activeObservers.size;
       console.log(`Observador removido. Total: ${observerCount}`);

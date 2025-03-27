@@ -115,3 +115,23 @@ h1, h2, h3 {
 .start-button:hover {
   background-color: #e67e22;
 }
+
+.download-button {
+  display: block;
+  margin-top: 15px;
+  background-color: #28a745;
+  color: white;
+}
+
+.zip-button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 24px;
+  margin: 20px 0;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.zip-button:hover {
+  background-color: #0056b3;
+}
