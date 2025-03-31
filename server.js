@@ -139,24 +139,24 @@ app.use((req, res, next) => {
 
   if (req.secure) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    //res.setHeader('Content-Security-Policy', 'default-src self; script-src self unsafe-inline; style-src self unsafe-inline');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('Permissions-Policy', 'geolocation=()');
   }
 
   const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
   const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
   const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/Start', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
+  const privatePaths = ['/thomas', '/download-log', '/Start', '/NBolas'];
   /*
   if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
     console.log('Acesso não autorizado ao path:', req.path);
     return res.status(404).send('Página não encontrada');
   }
 
-  if (!publicPaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
+  if (privatePaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
     console.log('Acesso não autorizado ao path:', req.path);
+    res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
     return res.status(404).redirect('/login');
-  }
-    */
+  }*/
 
   // Atualizar timestamp do observador
   if (req.session?.observer && activeObservers.has(req.sessionID)) {

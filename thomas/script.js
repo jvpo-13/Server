@@ -112,6 +112,9 @@ function formatValue(value, key) { // Recebe key como parâmetro
                 Nivel_Bateria: ' volts'
             };
             const unit = units[key] || ''; // Usa o parâmetro key
+            if (key === 'Tempo_Ligado') {
+                return Number(value).toFixed(0) + unit;
+            }
             return Number(value).toFixed(2) + unit;
         }
     }
