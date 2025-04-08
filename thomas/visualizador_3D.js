@@ -1,41 +1,70 @@
-
 let velCarro = 1;
 let theta = 0;
-// Função para mover o carro ao longo da pista
 let fraction = 0;
 let velocidade = 0.001;
 const vec = new THREE.Vector3(1, 0, 0);
 const axis = new THREE.Vector3();
-function moveCar(){
-  if (carro) {
-    const newPosition = pontos.getPoint(fraction);
-    const tangent = pontos.getTangent(fraction);
-    carro.position.copy(newPosition);
-    axis.crossVectors(vec, tangent).normalize();
-    const radians = Math.acos(vec.dot(tangent));
 
-    if(axis.z < 0.5){
-      carro.quaternion.setFromAxisAngle(axis, Math.PI+radians);
-    }else{
-      carro.quaternion.setFromAxisAngle(axis, radians);
-    }
-    fraction += velocidade;
-    if (fraction > 1) {
-      fraction = 0;
-    }    
+function moveCar() {
+  if (!carro) return;
+
+  // Array de segmentos em ordem crescente
+  const segmentos = [pontosCV, pontosCA1, pontosCL, pontosCA2, pontosCA3];
+  const segmentIds = ['CV', 'CA1', 'CL', 'CA2', 'CA3'];
+  
+  // Determina o segmento atual usando findIndex
+  currentSegment = segmentos.findIndex(seg => seg.getLength() > fraction * pontos.getLength());
+  currentSegment = currentSegment === -1 ? 0 : currentSegment;
+
+  // Verificação de status
+  const elementId = `data${segmentIds[currentSegment]}`;
+  const statusElement = document.getElementById(elementId);
+  const isSegmentActive = statusElement?.innerText === 'Em Operação';
+
+  // Atualização da fração
+  if (isSegmentActive) {
+    fraction = (fraction + velocidade) % 1; // Simplifica o reset
   }
+
+  // Atualização da posição e rotação
+  const newPosition = pontos.getPoint(fraction);
+  const tangent = pontos.getTangent(fraction).normalize();
+  carro.position.copy(newPosition);
+  
+  axis.crossVectors(vec, tangent).normalize();
+  const radians = Math.acos(vec.dot(tangent));
+  carro.quaternion.setFromAxisAngle(axis, axis.z < 0.5 ? Math.PI + radians : radians);
 }
 
-// Adicionando o caminho à cena
-const pontos = new THREE.CurvePath();
-pontos.add(pointsPathCV());
-pontos.add(pointsPathCA1());
-pontos.add(pointsPathCL());
-pontos.add(pointsPathCA2());
-pontos.add(pointsPathCA3());
+// Criação dos segmentos base
+const segmentosBase = [
+  pointsPathCV(),   // 0: CV
+  pointsPathCA1(),  // 1: CA1
+  pointsPathCL(),   // 2: CL
+  pointsPathCA2(),  // 3: CA2
+  pointsPathCA3()   // 4: CA3
+];
 
-const caminho = path();
+// Criação dos caminhos cumulativos
+const caminhosCumulativos = segmentosBase.map((_, i) => {
+  const caminho = new THREE.CurvePath();
+  for (let j = 0; j <= i; j++) {
+    caminho.add(segmentosBase[j]);
+  }
+  return caminho;
+});
+
+// Atribuição para as variáveis originais
+const [pontosCV, pontosCA1, pontosCL, pontosCA2, pontosCA3] = caminhosCumulativos;
+
+// Caminho completo
+const pontos = new THREE.CurvePath();
+segmentosBase.forEach(seg => pontos.add(seg));
+
+// Criação do caminho visualizado
+//const caminho = path();
 //scene.add(caminho);
+
 
 function path() {
   const material = new THREE.LineBasicMaterial({color: 0x9132a8});

@@ -16,13 +16,13 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API Multi-Usuário HD2D',
+      title: 'API Multi-Usuário Thomas HD2D',
       version: '1.0.0',
       description: 'Documentação completa da API do sistema multi-usuário',
     },
     servers: [
       { url: 'https://hd2d.fem.unicamp.br' },
-      { url: 'http://localhost:80' }
+      { url: 'https://hd2d.fem.unicamp.br/login' }
     ],
     components: {
       securitySchemes: {
