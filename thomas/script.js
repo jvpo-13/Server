@@ -64,8 +64,8 @@ async function getAllValues() {
 
         const downloadBtn = document.getElementById('downloadLog');
         if (downloadBtn) {
-            console.log('Atividade:', fullData['active']);
-            downloadBtn.style.display = fullData['active'] === true ? 'block' : 'none';
+            console.log('Atividade:', fullData['Active']);
+            downloadBtn.style.display = fullData['Active'] === true ? 'block' : 'none';
             //downloadBtn.style.display = Object.keys(fullData).length > 0 ? 'block' : 'none';
         }
         return fullData;
@@ -99,9 +99,18 @@ function startLogging() {
 
 // Função auxiliar para formatar valores
 function formatValue(value, key) { // Recebe key como parâmetro
+    if (key === 'Active') {
+        return value ? 'Finalizado' : 'Aguardando'; // Formato personalizado para Servo
+    }
+    if (key === 'Servo') {
+        return value ? 'Ativo' : 'Inativo'; // Formato personalizado para Servo
+    }
+    if (key.startsWith('OPC_Bola')) {
+        return `${value} unidades`; // Formato para contadores de bolas
+    }
     if(typeof value === 'boolean') return value ? 'Em Espera' : 'Em Operação';
-    // Converte para número se for string
 
+    // Converte para número se for string
     if (typeof value === 'string') {
         const numericValue = parseFloat(value);
         if (!isNaN(numericValue)) {
