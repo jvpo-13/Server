@@ -135,6 +135,8 @@ app.use(session({
 // Middleware global, exceto para páginas públicas (login, por exemplo)
 
 app.use((req, res, next) => {
+  if (req.path === '/robots.txt') return next(); // Ignora redirecionamento para o robots.txt
+  if (req.path === '/sitemap.xml') return next();
   if (!req.secure) {
     //HTTPS:
     console.log('Requisição insegura. Redirecionando para HTTPS...');

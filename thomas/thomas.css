@@ -84,15 +84,31 @@ h1, h2, h3 {
   border-radius: 8px;
 }
 
-.textarea-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+
+/* Centralização dos botões de download */
+.arquivos-grid {
+  display: flex;
+  justify-content: center;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Ajuste no grid de controles */
+.control-grid {
+  display: flex;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
   margin: 1rem 0;
 }
-  
+
+ /* Ajustes nos campos de texto */
+
 .textarea {
   height: min-content;
+  width: 30%;
   margin-top: 0px;
   margin-bottom: 5px;
   border-radius: 5px;
@@ -101,6 +117,26 @@ h1, h2, h3 {
   font-size: 16px;
 }
 
+.textarea-user {
+  height: min-content;
+  width: 40%;
+  margin-top: 0px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  border: 1px solid #33798f;
+  padding: 10px 15px;
+  font-size: 16px;
+  grid-column: 1 / -1;
+}
+
+.start-button {
+  width: minmax(200px, 1fr);
+  background-color: #f39c12;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  position: center;
+}
   
 #videoElement {
   width: 100%;
@@ -118,22 +154,18 @@ h1, h2, h3 {
   margin-top: 20px;
 }
   
-.start-button {
-  background-color: #f39c12;
-}
-  
 .start-button:hover {
   background-color: #e67e22;
 }
 
-
+/*
 .archives-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1rem;
   margin: 1rem 0;
 }
-
+*/
 .download-button {
   display: block;
   background-color: #28a745;
