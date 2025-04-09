@@ -25,8 +25,11 @@ async function loginObserver() {
   try {
     const response = await fetch('/loginObserver', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      credentials: 'include' // Crucial para cookies
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache' // Adicional para evitar cache
+      },
+      credentials: 'include' // Isso é crucial
     });
 
     const data = await response.json();

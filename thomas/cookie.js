@@ -33,7 +33,21 @@ function checkCookie() {
         getUser(user);
         alert("Bem vindo de volta " + user);
     } else {
-        user = prompt("Por favor, insira seu nome:", "");
+        while (user == "" || user == null) {
+            user = prompt("Por favor, insira seu nome:", "");
+            if (!user) {
+                alert('Preencha o campo "Nome do Operador" para prosseguir');
+                return;
+            }
+            if (user.length < 4 || user.length > 24) {
+                alert('O nome deve ter entre 4 e 24 caracteres');
+                return;
+            }
+            if (!/^[A-Za-z0-9 ]+$/.test(user)) {
+                alert('O nome não pode conter símbolos especiais');
+                return;
+            }
+        }        
         if (user != "" && user != null) {
             setCookie("username", user, 1);
             getUser(user);

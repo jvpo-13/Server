@@ -122,21 +122,29 @@
     <div id="controlSection">
       <h2 class="section-title">Controle</h2>
       <div class="buttons-container">
-        <textarea class="textarea" id="NBolas" placeholder="Número de bolinhas desejado" minlength="1" maxlength="2"></textarea>
-        <!--div class="data" id="dataNBolas"></div-->
-  
-        <button class="button start-button" id="Start">Iniciar</button>
-        
-        <div class="data" id="dataStart"></div> 
+        <div class="textarea-grid texto-grid">
+          <input class="textarea" type="text" id="operatorName" 
+                placeholder="Nome do Operador (5-24 caracteres, sem símbolos)"
+                minlength="5" maxlength="24"
+                pattern="[A-Za-z0-9 ]+"
+                title="Apenas letras, números e espaços (sem símbolos)">
+          
+          <input class="textarea" type="text" id="NBolas" 
+                    placeholder="Número de bolinhas desejado" 
+                    minlength="1" maxlength="2"
+                    pattern="[0-9 ]+"></textarea>
+          
+          <button class="button start-button" id="Start">Iniciar</button>
+        </div>
       </div>
-    </div> 
-    <button class="button download-button" id="downloadLog" style="display: none;">Exportar para Excel</button>  
-    
+    </div>
+      
     <div class="download-section">
       <h2>Arquivos do Sistema</h2>
-      <button class="button zip-button" onclick="window.open('/download-files', '_blank')">
-        Baixar Todos os Arquivos (ZIP)
-      </button>
+      <div class="archives-grid arquivos-grid">
+        <button class="button download-button" id="downloadLog" style="display: none;">Exportar para Excel</button>
+        <button class="button zip-button" onclick="window.open('/download-files', '_blank')">Baixar Todos os Arquivos (ZIP)</button>
+      </div>
     </div>
 
     <h2>Gêmeo Digital</h2>
@@ -160,6 +168,15 @@
     -->
     
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if(urlParams.has('observer')) {
+        document.getElementById('controlSection').style.display = 'none';
+      }
+    });
+  </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.rawgit.com/mrdoob/three.js/r128/examples/js/loaders/STLLoader.js"></script>

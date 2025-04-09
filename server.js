@@ -52,11 +52,12 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT']
 }));
 */
+
 app.use(cors({
   origin: ['https://hd2d.fem.unicamp.br', 'http://143.106.61.229:80'],
-  credentials: true,
+  credentials: true, // Permite credenciais
   methods: ['GET', 'POST', 'PUT'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'] // Adicione headers necessários
 }));
 
 app.use((req, res, next) => {
@@ -104,8 +105,15 @@ app.use(session({
   rolling: true
 }));
 
+
+/*
 const requireUser = (req, res, next) => {
   if (req.session.user) return next();
+  res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
+};
+*/
+const requireUser = (req, res, next) => {
+  if (req.session.user || req.session.observer) return next(); // Permite usuários e observadores
   res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
 };
 
@@ -144,8 +152,8 @@ app.use((req, res, next) => {
 
   const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
   const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
-  const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/Start', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
-  const privatePaths = ['/thomas', '/download-log', '/Start', '/NBolas'];
+  const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/StartSystem', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
+  const privatePaths = ['/thomas', '/download-log', '/StartSystem', '/NBolas'];
   /*
   if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
     console.log('Acesso não autorizado ao path:', req.path);
@@ -465,53 +473,9 @@ app.use('/bracorobotico', createProxyMiddleware({
 
 /**
  * @swagger
- * /Start:
- *   get:
- *     summary: Iniciar sistema via TCP
- *     tags: [Controle]
- *     security:
- *       - sessionCookie: []
- *     responses:
- *       200:
- *         description: Comando START enviado ao Plant Simulation
- *       500:
- *         description: Erro interno
- */
-app.get('/Start', requireUser, async (req, res) => {
-  try {
-    const command = {
-      token: '123456',
-      command: 'START',
-      value: 1
-    };
-
-    tcpConnections.forEach((socket) => {
-      socket.write(JSON.stringify(command) + '\n');
-    });
-
-    // Inicia o registro do log
-    isLogging = true;
-    logData = [];
-    startLogging();
-
-    //Cria estrutura inicial do Excel
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet([]);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Dados Operacionais");
-    XLSX.writeFile(workbook, logFilePath);
-
-    res.json({ status: 'START command sent' });
-  } catch (error) {
-    console.error('Error sending START command:', error);
-    res.status(500).send('Error sending command');
-  }
-});
-// server.js
-/**
- * @swagger
- * /NBolas:
- *   put:
- *     summary: Envia número de bolas via TCP
+ * /StartSystem:
+ *   post:
+ *     summary: Inicia sistema com todos os parâmetros
  *     tags: [Controle]
  *     security:
  *       - sessionCookie: []
@@ -522,39 +486,58 @@ app.get('/Start', requireUser, async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               value:
+ *               nbolas:
  *                 type: integer
+ *               operator:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Comando NBolas enviado
+ *         description: Sistema iniciado com sucesso
  *       400:
- *         description: Valor inválido
+ *         description: Parâmetros inválidos
  *       500:
  *         description: Erro interno
  */
-app.put('/NBolas', requireUser, async (req, res) => {
+app.post('/StartSystem', requireUser, async (req, res) => {
   try {
-    let { value } = req.body;
-    value = parseInt(value);
+      const { nbolas, operator } = req.body;
+  
+      // Validações
+      if (!operator || !/^[A-Za-z0-9 ]{4,24}$/.test(operator)) {
+          return res.status(400).json({ error: 'Nome do operador inválido' });
+      }
 
-    if (isNaN(value)) {
-      return res.status(400).json({ error: 'Número inválido' });
-    }
+      if (isNaN(nbolas) || nbolas % 4 !== 0 || nbolas > 20) {
+          return res.status(400).json({ error: 'Valor de NBolas inválido' });
+      }
 
-    const command = {
-      token: '123456',
-      command: 'NBOLAS',
-      value: value
-    };
+      // Envia START
+      const startCommand = {
+          token: '123456',
+          command: 'START',
+          nbolas: parseInt(nbolas),
+          operator: operator
+      };
 
-    tcpConnections.forEach((socket) => {
-      socket.write(JSON.stringify(command) + '\n');
-    });
+      // Executa comandos no TCP
+      tcpConnections.forEach((socket) => {
+          socket.write(JSON.stringify(startCommand) + '\n');
+      });
 
-    res.json({ status: 'NBOLAS command sent', value });
+      // Registra log (mantenha sua lógica existente)
+      isLogging = true;
+      logData = [];
+      startLogging();
+
+      res.json({ 
+          status: 'Sistema iniciado',
+          nbolas,
+          operator
+      });
+
   } catch (error) {
-    console.error('Error sending NBOLAS command:', error);
-    res.status(500).send('Error sending command');
+      console.error('Erro no StartSystem:', error);
+      res.status(500).send('Erro interno');
   }
 });
 
@@ -860,7 +843,7 @@ app.post('/loginObserver', (req, res) => {
         console.log('Observador conectado:', req.sessionID);
         return res.json({
           message: 'Login observador realizado',
-          redirect: '/thomas'
+          redirect: '/thomas?observer=true' // Adicione um parâmetro para identificação
         });
       });
       

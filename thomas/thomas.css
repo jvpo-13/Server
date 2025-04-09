@@ -83,15 +83,24 @@ h1, h2, h3 {
   padding: 1rem;
   border-radius: 8px;
 }
+
+.textarea-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
   
 .textarea {
   height: min-content;
-  margin-top: 10px;
+  margin-top: 0px;
+  margin-bottom: 5px;
   border-radius: 5px;
   border: 1px solid #33798f;
   padding: 10px 15px;
   font-size: 16px;
 }
+
   
 #videoElement {
   width: 100%;
@@ -117,11 +126,22 @@ h1, h2, h3 {
   background-color: #e67e22;
 }
 
+
+.archives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
 .download-button {
   display: block;
-  margin-top: 15px;
   background-color: #28a745;
   color: white;
+  padding: 12px 24px;
+  margin: 20px 0;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
 .zip-button {

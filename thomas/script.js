@@ -131,33 +131,49 @@ function formatValue(value, key) { // Recebe key como parâmetro
 }
 
 document.getElementById('Start').addEventListener('click', async () => {
-    let value = document.getElementById('NBolas').value;
+    const value = document.getElementById('NBolas').value;
+    const operatorName = document.getElementById('operatorName').value.trim();
 
-    if (value == '') { // Verifica se o campo está vazio
+    // Validação do nome
+    if (!operatorName) {
+        alert('Preencha o campo "Nome do Operador" para prosseguir');
+        return;
+    }
+    if (operatorName.length < 4 || operatorName.length > 24) {
+        alert('O nome deve ter entre 4 e 24 caracteres');
+        return;
+    }
+    if (!/^[A-Za-z0-9 ]+$/.test(operatorName)) {
+        alert('O nome não pode conter símbolos especiais');
+        return;
+    }
+
+    // Validação existente do NBolas
+    if (value === '') {
         alert('Preencha o campo "Número de bolinhas desejado" para prosseguir');
         return;
-    }else if (value%4 != 0){ // Verifica se o valor é múltiplo de 4
+    } else if (value % 4 != 0) {
         alert('Preencha o campo com um valor múltiplo de 4');
         return;
-    }else if (value > 20){ // Verifica se o valor é maior que 20
+    } else if (value > 20) {
         alert('Preencha o campo com um valor menor ou igual a 20');
         return;
     }
 
     try {
-        // Envia apenas NBOLAS
-        const nbolasResponse = await fetch('https://hd2d.fem.unicamp.br/NBolas', {
-            method: 'PUT',
+        // Envia TUDO em uma única requisição
+        const response = await fetch('https://hd2d.fem.unicamp.br/StartSystem', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({value})
+            body: JSON.stringify({
+                nbolas: value,
+                operator: operatorName
+            })
         });
 
-        // Envia START separadamente
-        const startResponse = await fetch('https://hd2d.fem.unicamp.br/Start');
-        
-        if (!nbolasResponse.ok || !startResponse.ok) {
+        if (!response.ok) {
             throw new Error('Erro no comando');
         }
 
@@ -180,12 +196,6 @@ function updateObserverCount() {
           `${data.count}/${data.maxCapacity}`;
       });
 }
-  
-// Chame na inicialização e atualize periodicamente
-document.addEventListener('DOMContentLoaded', () => {
-    updateObserverCount();
-    setInterval(updateObserverCount, 10000); // Atualiza a cada 10 segundos
-});
 
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/check-session')
@@ -204,4 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }, 30000);
         }
     });
+
+    let user = getCookie("username");
+    if (user != "") {
+        getUser(user);
+        document.getElementById('operatorName').value = user;
+    }    
+
+    updateObserverCount(); // Chame na inicialização e atualize periodicamente
+    setInterval(updateObserverCount, 10000); // Atualiza a cada 10 segundos
 });
