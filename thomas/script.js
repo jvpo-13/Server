@@ -105,7 +105,7 @@ function formatValue(value, key) { // Recebe key como parâmetro
     if (key === 'Servo') {
         return value ? 'Ativo' : 'Inativo'; // Formato personalizado para Servo
     }
-    if (key.startsWith('OPC_Bola')) {
+    if (key.startsWith('Contagem_de_Bolas_')) {
         return `${value} unidades`; // Formato para contadores de bolas
     }
     if(typeof value === 'boolean') return value ? 'Em Espera' : 'Em Operação';

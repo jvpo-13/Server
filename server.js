@@ -336,25 +336,8 @@ const tcpServer = net.createServer((socket) => {
               message: 'Token inválido!'
           }) + '\n');
       }
-
-      // Resposta de sucesso
-      /*
-      socket.write(JSON.stringify({
-          token: "123456",
-          status: 200,
-          message: 'Dados processados com sucesso',
-          received: receivedData
-      }) + '\n');
-      */
-
     } catch (error) {
         console.error('Erro no processamento:', error);
-        /*
-        socket.write(JSON.stringify({
-            status: 500,
-            error: 'Formato de dados inválido'
-        }) + '\n');
-         */
     }
   });
 
@@ -528,8 +511,10 @@ app.post('/StartSystem', requireUser, async (req, res) => {
 
       // Registra log (mantenha sua lógica existente)
       isLogging = true;
+      //isLogging = false;
+      if (logInterval) clearInterval(logInterval);
       logData = [];
-      startLogging();
+      startLogging(req.session.user);
 
       res.json({ 
           status: 'Sistema iniciado',
@@ -552,22 +537,82 @@ let logData = [];
 let logInterval;
 const logFilePath = path.join(__dirname, 'operation_log.xlsx');
 
-function startLogging() {
+// 1. Lista de campos a serem excluídos do log
+const EXCLUDED_FIELDS = ['token', 'status']; // Adicione outros campos conforme necessário
+
+// 2. Variável para armazenar o último estado registrado
+let lastLoggedData = {};
+
+// Modifique a função initializeLogFile
+function initializeLogFile(user) {
+  const workbook = XLSX.utils.book_new();
+  
+  // Filtra os campos relevantes
+  const filteredData = filterData(receivedData);
+  
+  // Cria planilha de metadados
+  const metadataSheet = XLSX.utils.aoa_to_sheet([
+    ["Usuário", user],
+    ["Início", new Date().toISOString()],
+    ["Campos Registrados", Object.keys(filteredData).join(", ")]
+  ]);
+  XLSX.utils.book_append_sheet(workbook, metadataSheet, "Metadados");
+
+  // Cria planilha principal com cabeçalhos filtrados
+  const header = ["timestamp", ...Object.keys(filteredData)];
+  const dataSheet = XLSX.utils.json_to_sheet([], { header });
+  XLSX.utils.book_append_sheet(workbook, dataSheet, "Dados Operacionais");
+
+  XLSX.writeFile(workbook, logFilePath);
+}
+
+// Função para filtrar dados
+function filterData(data) {
+  const filtered = {...data};
+  EXCLUDED_FIELDS.forEach(field => delete filtered[field]);
+  return filtered;
+}
+
+// Função para comparar dados
+function hasChanges(newData, lastData) {
+  const keys = Object.keys(newData);
+  if (keys.length !== Object.keys(lastData).length) return true;
+  
+  return keys.some(key => 
+    newData[key] !== lastData[key] &&
+    key !== 'timestamp' // Ignora o timestamp na comparação
+  );
+}
+
+// Atualize a função startLogging
+function startLogging(user) {
+  if (fs.existsSync(logFilePath)) fs.unlinkSync(logFilePath);
+  initializeLogFile(user);
+  lastLoggedData = {}; // Reseta o último estado
+
   logInterval = setInterval(async () => {
     if (isLogging && Object.keys(receivedData).length > 0) {
-      const entry = {
+      const filteredData = filterData(receivedData);
+      const newEntry = {
         timestamp: new Date().toISOString(),
-        ...receivedData
+        ...filteredData
       };
-      logData.push(entry);
-      
-      // Atualiza arquivo XLS
-      const workbook = XLSX.readFile(logFilePath);
-      const worksheet = workbook.Sheets["Dados Operacionais"];
-      XLSX.utils.sheet_add_json(worksheet, [entry], {header: ["timestamp", ...Object.keys(receivedData)], skipHeader: true, origin: -1});
-      XLSX.writeFile(workbook, logFilePath);
+
+      // Verifica mudanças
+      if (hasChanges(filteredData, lastLoggedData)) {
+        const workbook = XLSX.readFile(logFilePath);
+        const worksheet = workbook.Sheets["Dados Operacionais"];
+        
+        XLSX.utils.sheet_add_json(worksheet, [newEntry], {
+          skipHeader: true,
+          origin: -1
+        });
+        
+        XLSX.writeFile(workbook, logFilePath);
+        lastLoggedData = filteredData; // Atualiza último estado
+      }
     }
-  }, 5000); // Atualiza a cada 5 segundos
+  }, 100);
 }
 
 /**
@@ -592,8 +637,12 @@ app.get('/download-log', requireUser, (req, res) => {
   if (!fs.existsSync(logFilePath)) {
     return res.status(404).send('Arquivo de log não disponível');
   }
-  
-  res.download(logFilePath, `operacao_${Date.now()}.xlsx`, (err) => {
+
+  const username = req.session.user || 'unknown';
+  const date = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19);
+  const filename = `log_${username}_${date}.xlsx`; // Nome formatado
+
+  res.download(logFilePath, filename, (err) => {
     if (err) console.error('Erro no download:', err);
   });
 });
