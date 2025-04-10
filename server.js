@@ -769,17 +769,6 @@ app.use((req, res, next) => {
   next();
 });
 
-//################################  Hash e Autenticação ################################//
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
-
-const listaSenhas = []; // Senhas a serem hasheadas
-
-for (const senha of listaSenhas) {
-  const hash = bcrypt.hashSync(senha, saltRounds);
-  console.log('Senha:', senha, 'Hash:', hash);
-}
-
 //#################################  Observação de Usuário ################################//
 
 // Variáveis globais
@@ -909,6 +898,25 @@ app.post('/loginObserver', (req, res) => {
   }
 });
 
+//################################  Hash e Autenticação ################################//
+// Adicione no início do arquivo
+require('dotenv').config();
+
+// Modifique a seção de Hash e Autenticação
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+// Carrega usuários do .env
+const loadUsers = () => {
+  try {
+    return JSON.parse(process.env.USERS || '{}');
+  } catch (error) {
+    console.error('Erro ao carregar usuários:', error);
+    return {};
+  }
+};
+
+// Modifique o endpoint /login
 /**
  * @swagger
  * /login:
@@ -938,41 +946,23 @@ app.post('/loginObserver', (req, res) => {
  */
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
+  const users = loadUsers();
 
-  // Caminho do arquivo users.txt
-  const usersFilePath = path.join(__dirname, 'users.txt');
-
-  // Lê o arquivo users.txt
-  fs.readFile(usersFilePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Erro ao ler o arquivo:', err);
-      return res.status(500).json({ message: 'Erro no servidor' });
+  try {
+    if (!username || !password) {
+      return res.status(401).json({ message: 'Credenciais inválidas!' });
     }
 
-    // Divide as linhas do arquivo em um array, e remove linhas vazias
-    const users = data.split('\n').filter(line => line.trim() !== '');
-
-    // Verifica se as credenciais estão corretas
-    let isAuthenticated = false;
-
-    users.forEach(user => {
-      const [fileUsername, filePassword] = user.split(':');
-      if (fileUsername.trim() === username && bcrypt.compareSync(password, filePassword.trim())) {
-        isAuthenticated = true;
-      }
-    });
-
-    if (isAuthenticated) {
+    // Verifica se o usuário existe e compara a senha
+    if (users[username] && bcrypt.compareSync(password, users[username])) {
       if (isOccupied) {
         return res.status(403).json({ message: 'Sistema em uso. Acesse como observador.' });
       }
+      
       isOccupied = true;
       lastActiveTime = Date.now();
-    }
-
-    if (isAuthenticated) {
-      req.session.user = username; // Salva o usuário na sessão
-      res.status(200).json({ message: 'Login bem-sucedido!' });
+      req.session.user = username;
+      
       var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
       console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
       const emailList = ['jvpomigliooliveira@gmail.com', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br'];
@@ -996,11 +986,19 @@ app.post('/login', (req, res) => {
           });
         }
       }
-    } else {
-      res.status(401).json({ message: 'Credenciais inválidas!' });
+
+      return res.status(200).json({ message: 'Login bem-sucedido!' });
     }
-  });
+
+    return res.status(401).json({ message: 'Credenciais inválidas!' });
+    
+  } catch (error) {
+    console.error('Erro no login:', error);
+    return res.status(500).json({ message: 'Erro no servidor' });
+  }
 });
+
+
 
 //################################  Loop ################################//
 
