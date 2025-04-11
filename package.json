@@ -2,11 +2,13 @@
   "dependencies": {
     "archiver": "^7.0.1",
     "bcrypt": "^5.1.1",
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
+    "helmet": "^8.1.0",
     "http-proxy-middleware": "^3.0.3",
     "http2": "^3.3.6",
     "node": "^22.7.0",
@@ -15,5 +17,8 @@
     "swagger-ui-express": "^5.0.1",
     "ws": "^8.18.1",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "critical": "^7.2.1"
   }
 }

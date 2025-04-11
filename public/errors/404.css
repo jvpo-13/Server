@@ -1,0 +1,219 @@
+:root {
+    --primary-dark: #0a192f;
+    --accent: #64ffda;
+    --secondary: #495670;
+    --text-primary: #ccd6f6;
+    --text-secondary: #8892b0;
+}
+
+.error-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--primary-dark);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.error-hero {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.error-graphic {
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.error-code {
+    font-size: 25vw;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    opacity: 0.1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    animation: pulse 6s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.1; }
+    50% { opacity: 0.15; }
+}
+
+.error-scan {
+    position: absolute;
+    width: 60%;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.3;
+    z-index: 1;
+    animation: scan 8s linear infinite;
+}
+
+@keyframes scan {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.error-divider {
+    width: 120px;
+    height: 3px;
+    background: var(--accent);
+    margin: 2rem auto;
+    position: relative;
+    z-index: 2;
+    border-radius: 2px;
+    box-shadow: 0 0 15px rgba(100,255,218,0.3);
+}
+
+.error-content {
+    position: relative;
+    z-index: 2;
+    padding: 3rem 2rem;
+    background: rgba(10, 25, 47, 0.95);
+    border-radius: 16px;
+    border: 1px solid var(--secondary);
+    backdrop-filter: blur(5px);
+    margin: 0 1rem;
+}
+
+.error-content h1 {
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.error-description {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+}
+
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.error-button {
+    flex: 1 1 300px;
+    padding: 1.5rem 2rem;
+    border-radius: 10px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-weight: 600;
+}
+
+.error-button i {
+    font-size: 1.8rem;
+    transition: transform 0.3s ease;
+}
+
+.error-button.primary {
+    background: linear-gradient(135deg, var(--accent) 0%, #33798f 100%);
+    color: var(--primary-dark);
+    border: 2px solid var(--accent);
+}
+
+.error-button.secondary {
+    background: linear-gradient(135deg, #ffeeba 0%, #ffdf7e 100%);
+    color: #8a6d3b;
+    border: 2px solid #ffdf7e;
+}
+
+.error-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(100,255,218,0.3);
+}
+
+.error-button:hover i {
+    transform: scale(1.15);
+}
+
+.error-footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    background: rgba(10, 25, 47, 0.9);
+    border-top: 1px solid var(--secondary);
+    backdrop-filter: blur(5px);
+}
+
+.error-footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+    .error-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .error-content h1 {
+        font-size: 2rem;
+    }
+    
+    .error-description {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .error-hero {
+        padding: 1rem;
+    }
+    
+    .error-code {
+        font-size: 30vw;
+    }
+    
+    .error-content h1 {
+        font-size: 1.8rem;
+    }
+    
+    .error-button {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .error-content {
+        padding: 1.5rem 1rem;
+        margin: 0 0.5rem;
+    }
+    
+    .error-content h1 {
+        font-size: 1.6rem;
+    }
+    
+    .error-button {
+        padding: 1.2rem;
+    }
+    
+    .error-button i {
+        font-size: 1.5rem;
+    }
+}

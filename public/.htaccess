@@ -1,0 +1,5 @@
+RewriteCond %{HTTP_HOST} ^www\hd2d\.fem\.unicamp\.br\/\home/$
+RewriteRule ^/?$ "http\:\/\/hd2d\.fem\.unicamp\.br\/\home/" [R=301,L]
+
+RewriteCond %{HTTPS_HOST} ^www\hd2d\.fem\.unicamp\.br\/\home/$
+RewriteRule ^/?$ "https\:\/\/hd2d\.fem\.unicamp\.br\/\home/" [R=301,L]

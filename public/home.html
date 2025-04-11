@@ -1,19 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-PJZJFDZG');
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Unifique todas as meta tags em uma única seção head -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratório Multiusuário - LPSP - Página Inicial</title>
+  <meta name="description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, para a analise e geração de dados. Acesso ao sistema de experimentos remotos Thomas, API do sistema Thomas, sistema Pipefa, Aloee (APS), controle do braço robótico industrial e análise de valor de dados.">
+  <meta name="keywords" content="Laboratório Multiusuário, LPSP, controle remoto, sistemas de produção, analise de dados, geração de dados, experimentos remotos, API do sistema Thomas, sistema Pipefa, Aloee (APS), braço robótico industrial, análise de valor de dados">
+
+  <!-- CSS Crítico Inline -->
+  <style>
+    body { font-family: Arial,sans-serif; margin:0; padding:0; background-color:#f5f5f5 }
+    .header { background-color:#071e22; color:white; padding:20px; text-align:center }
+    .container { max-width:1200px; margin:20px auto; padding:20px }
+    h1,h2,h3 { text-align:center; color:#33798f }
+    h1 { margin:0; font-size:2.5em }
+    
+    /* Layout inicial crítico */
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+  </style>
+
+  <!-- Carregamento assíncrono do CSS restante -->
+  <link rel="preload" href="home.css" as="style" id="preload-css" media="all">
+  <script nonce="SEU_NONCE_AQUI">
+    window.onload = function() {
+      const link = document.getElementById('preload-css');
+      link.rel = 'stylesheet';
+    };
+  </script>
+  <!-- link rel="stylesheet" href="home.css" -->
+
+  <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
+  <link rel="canonical" href="https://hd2d.fem.unicamp.br/home.html">
 
   <meta name="google-site-verification" content="JoApBKnNr4baGi-lamXCxxddwZTPCqg6q3uzctvDVrk" />
-
+  
   <meta property="og:title" content="Laboratório Multiusuário">
   <meta property="og:description" content="De onde estiver, quando quiser">
   <meta property="og:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
   <meta property="og:url" content="https://hd2d.fem.unicamp.br/home.html">
-
-  <!-- HTML Meta Tags -->
-  <title>Laboratório Multiusuário</title>
-  <meta name="description" content="Laboratório Multiusuário para controle remoto de sistemas de produção, analise e geração de dados.">
 
   <!-- Facebook Meta Tags -->
   <meta property="og:url" content="https://hd2d.fem.unicamp.br/">
@@ -31,20 +69,12 @@
   <meta name="twitter:image" content="https://hd2d.fem.unicamp.br/LMU.JPG">
 
   <!-- Meta Tags Generated via https://www.opengraph.xyz -->
-
-  <link rel="stylesheet" href="home.css">
-  <link rel="icon" type="image/x-icon" href="https://hd2d.fem.unicamp.br/favicon.ico">
-  <link rel="canonical" link="https://hd2d.fem.unicamp.br/home.html">
-  
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Laboratorio Multi Usuário - Página Inicial</title>
-      <style>
-          
-      </style>
-  </head>
   <body>
+      <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PJZJFDZG"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      <!-- End Google Tag Manager (noscript) -->
+
       <div class="header">
           <h1>Laboratório Multi Usuário - LPSP</h1>
           <p>Laboratório de Sistemas Multimídia e Multiusuários</p>
@@ -52,34 +82,34 @@
   
       <div class="container">
           <div class="button-container">
-              <a href="https://hd2d.fem.unicamp.br/thomas" class="system-button">
+              <a style="min-height: 10em" href="https://hd2d.fem.unicamp.br/thomas" class="system-button">
                   <h2>Sistema Thomas</h2>
-                  <p>Acesso ao sistema de experimentos remotos Thomas</p>
+                  <p style="min-height: 7.6em">Acesso ao sistema de experimentos remotos Thomas</p>
               </a>
 
-              <a href="https://hd2d.fem.unicamp.br/api-docs" class="system-button">
+              <a style="min-height: 10em" href="https://hd2d.fem.unicamp.br/api-docs" class="system-button">
                 <h2>API do Sistema Thomas</h2>
-                <p>Descrição da API do sistema</p>
+                <p style="min-height: 7.6em">Descrição da API do sistema</p>
               </a>
   
-              <a href="https://hd2d.fem.unicamp.br/pipefa" class="system-button">
+              <a style="min-height: 10em" href="https://hd2d.fem.unicamp.br/pipefa" class="system-button">
                   <h2>Sistema Pipefa</h2>
-                  <p>Acesso ao sistema de experimentos com Pipefa</p>
+                  <p style="min-height: 7.6em">Acesso ao sistema de experimentos com Pipefa</p>
               </a>
 
-              <a href="https://app.aloee.it/#/mes/tempo-real" class="system-button">
+              <a style="min-height: 10em" href="https://app.aloee.it/#/mes/tempo-real" class="system-button">
                 <h2>Pipefa - Aloee (APS)</h2>
-                <p>Acesso á relatorios industrias do sistema Pipefa</p>
+                <p style="min-height: 7.6em"> Acesso á relatorios industrias do sistema Pipefa</p>
               </a>
   
-              <a href="https://hd2d.fem.unicamp.br/bracorobotico" class="system-button">
+              <a style="min-height: 10em" href="https://hd2d.fem.unicamp.br/bracorobotico" class="system-button">
                   <h2>Braço Robótico</h2>
-                  <p>Controle do braço robótico industrial</p>
+                  <p style="min-height: 7.6em">Controle do braço robótico industrial</p>
               </a>
 
-              <a href="https://kvn12.github.io/IntegratedMethodOnlineTool/" class="system-button">
+              <a style="min-height: 10em" href="https://kvn12.github.io/IntegratedMethodOnlineTool/" class="system-button">
                 <h2>Análise de Valor de Dados</h2>
-                <p>Método para avaliar o valor gerado por dados no contexto da indústria 4.0</p>
+                <p style="min-height: 7.6em">Método para avaliar o valor gerado por dados no contexto da indústria 4.0</p>
             </a>
           </div>
       </div>

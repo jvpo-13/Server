@@ -5,7 +5,50 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
 const express = require('express');
+const compression = require('compression');
+const helmet = require('helmet');
 const app = express();
+
+// ======== CONFIGURAÇÃO DE COMPRESSÃO ======== //
+app.use(compression({
+  level: 9, // Nível de compressão (1-9)
+  threshold: 0, // Comprime todos os recursos
+  filter: (req, res) => {
+    // Habilita compressão para CSS/JS mesmo se houver outros middlewares
+    return /text|javascript|css/.test(res.getHeader('Content-Type'));
+  }
+}));
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [ "'self'", "'unsafe-inline'", "https://hd2d.fem.unicamp.br", "https://www.googletagmanager.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+        imgSrc: ["'self'", "data:", "https://hd2d.fem.unicamp.br", "https://www.googletagmanager.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+        connectSrc: ["'self'", "https://hd2d.fem.unicamp.br"],
+        frameSrc: ["'self'", "https://app.aloee.it"],
+        objectSrc: ["'none'"]
+      }
+    },
+    crossOriginEmbedderPolicy: { policy: "require-corp" },
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "same-site" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+  })
+);
+
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    "geolocation=(), camera=(), microphone=(), payment=()"
+  );
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  next();
+});
 
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -57,6 +100,7 @@ app.use(cors({
   origin: ['https://hd2d.fem.unicamp.br', 'http://143.106.61.229:80'],
   credentials: true, // Permite credenciais
   methods: ['GET', 'POST', 'PUT'],
+  exposedHeaders: ['Content-Encoding', 'Cache-Control'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'] // Adicione headers necessários
 }));
 
@@ -84,7 +128,22 @@ const server = https.createServer(options, app);
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 const thomasPath = path.join(__dirname, 'thomas');
-app.use('/', express.static(publicPath));
+const Path404 = path.join(__dirname, 'public', 'errors', '404.html');
+
+//app.use('/', express.static(publicPath));
+// Configuração existente - modifique para:
+app.use('/', express.static(publicPath, {
+  immutable: true, // Para versões com hash no nome do arquivo
+  maxAge: '1y', // 31536000 segundos
+  setHeaders: (res, path) => {
+    res.setHeader(
+      'Cache-Control', 
+      path.endsWith('.css') || path.endsWith('.js') 
+        ? 'public, max-age=31536000, immutable' 
+        : 'public, max-age=604800' // 1 semana para outros arquivos
+    );
+  }
+}));
 app.use('/', express.static(thomasPath));
 app.use(express.json());
 
@@ -162,6 +221,8 @@ app.use((req, res, next) => {
     return res.status(404).send('Página não encontrada');
   }
 
+  res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
+
   if (privatePaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
     console.log('Acesso não autorizado ao path:', req.path);
     res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
@@ -176,7 +237,7 @@ app.use((req, res, next) => {
   if (req.session?.user || req.session?.observer) {
     return next();
   }
-
+  //res.status(404).sendFile(Path404);
   next();
 });
 
@@ -635,7 +696,7 @@ function startLogging(user) {
  */
 app.get('/download-log', requireUser, (req, res) => {
   if (!fs.existsSync(logFilePath)) {
-    return res.status(404).send('Arquivo de log não disponível');
+    res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
   }
 
   const username = req.session.user || 'unknown';
@@ -786,6 +847,22 @@ app.get('/check-session', (req, res) => {
 app.use((req, res, next) => {
   if (req.session.user) lastActiveTime = Date.now();
   next();
+});
+
+// Middleware 404 (SEMPRE o último middleware)
+app.use((req, res, next) => {
+  // Verificação adicional para arquivos estáticos
+  const filePath = path.join(__dirname, 'public', req.path);
+  
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+      if(err) {
+          // Arquivo realmente não existe
+          res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
+      } else {
+          // Se o arquivo existe mas não foi capturado, passa adiante
+          next();
+      }
+  });
 });
 
 // Verificar inatividade a cada minuto

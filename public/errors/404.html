@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Não Encontrada - Laboratório Multiusuário</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="errors/404.css">
+</head>
+<body>
+    <main class="error-wrapper">
+        <section class="error-hero">
+            <div class="error-graphic">
+                <div class="error-code">404</div>
+            </div>
+            
+            <div class="error-content">
+                <h1>Ops! Página perdida no laboratório</h1>
+                <p class="error-description">Parece que este experimento não está no nosso banco de dados. Tente uma dessas soluções:</p>
+                
+                <div class="error-actions">
+                    <a href="https://hd2d.fem.unicamp.br" class="error-button primary">
+                        <i class="fas fa-home"></i>
+                        Voltar à Página Inicial
+                    </a>
+                    <a href="mailto:suporte@lab.unicamp.br" class="error-button secondary">
+                        <i class="fas fa-bug"></i>
+                        Reportar Erro
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="error-footer">
+            <p>Laboratório Multi Usuário LPSP • Última atualização: <span id="last-modified"></span></p>
+        </footer>
+    </main>
+
+    <script>
+        // Script para data de última modificação
+        document.getElementById('last-modified').textContent = document.lastModified.split(' ')[1];
+    </script>
+</body>
+</html>
