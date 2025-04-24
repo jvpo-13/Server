@@ -6,7 +6,7 @@ const path = require('path');
 
 const express = require('express');
 const compression = require('compression');
-const helmet = require('helmet');
+//const helmet = require('helmet');
 const app = express();
 
 // ======== CONFIGURAÇÃO DE COMPRESSÃO ======== //
@@ -18,7 +18,7 @@ app.use(compression({
     return /text|javascript|css/.test(res.getHeader('Content-Type'));
   }
 }));
-
+/*
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -39,7 +39,7 @@ app.use(
     referrerPolicy: { policy: "strict-origin-when-cross-origin" }
   })
 );
-
+*/
 
 app.use((req, res, next) => {
   res.setHeader(
@@ -98,10 +98,10 @@ app.use(cors({
 
 app.use(cors({
   origin: ['https://hd2d.fem.unicamp.br', 'http://143.106.61.229:80'],
-  credentials: true, // Permite credenciais
+  credentials: true,
   methods: ['GET', 'POST', 'PUT'],
-  exposedHeaders: ['Content-Encoding', 'Cache-Control'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'] // Adicione headers necessários
+  exposedHeaders: ['Content-Encoding', 'Cache-Control', 'Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept']
 }));
 
 app.use((req, res, next) => {
@@ -193,6 +193,110 @@ app.use(session({
 // Middleware para registrar cada requisição recebida
 // Middleware global, exceto para páginas públicas (login, por exemplo)
 
+app.get('/login', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'thomas', 'login.html'));
+});
+
+//################################  Hash e Autenticação ################################//
+// Adicione no início do arquivo
+require('dotenv').config();
+
+// Modifique a seção de Hash e Autenticação
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+// Carrega usuários do .env
+const loadUsers = () => {
+  try {
+    return JSON.parse(process.env.USERS || '{}');
+  } catch (error) {
+    console.error('Erro ao carregar usuários:', error);
+    return {};
+  }
+};
+
+
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Autenticação de usuário
+ *     tags: [Autenticação]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login bem-sucedido
+ *       401:
+ *         description: Credenciais inválidas
+ *       403:
+ *         description: Sistema em uso
+ *       500:
+ *         description: Erro no servidor
+ */
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const users = loadUsers();
+
+  try {
+    if (!username || !password) {
+      return res.status(401).json({ message: 'Credenciais inválidas!' });
+    }
+
+    // Verifica se o usuário existe e compara a senha
+    if (users[username] && bcrypt.compareSync(password, users[username])) {
+      if (isOccupied) {
+        return res.status(403).json({ message: 'Sistema em uso. Acesse como observador.' });
+      }
+      
+      isOccupied = true;
+      lastActiveTime = Date.now();
+      req.session.user = username;
+      
+      var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
+      console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
+      const emailList = ['jvpomigliooliveira@gmail.com', 'labpsp@fem.unicamp.br'];
+
+      for (const email of emailList) {
+        // Configurando os detalhes do email
+        let mailOptions = {
+          from: 'jvpo.emailsender@gmail.com',
+          to: email,
+          subject: 'Acesso ao Multi Usuario',
+          text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
+        };
+        // Enviar o email
+        if (req.session.user != 'admin') {
+          transporter.sendMail(mailOptions, function(error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email enviado: ' + info.response);
+            }
+          });
+        }
+      }
+
+      return res.status(200).json({ message: 'Login bem-sucedido!' });
+    }
+
+    return res.status(401).json({ message: 'Credenciais inválidas!' });
+    
+  } catch (error) {
+    console.error('Erro no login:', error);
+    return res.status(500).json({ message: 'Erro no servidor' });
+  }
+});
+
 app.use((req, res, next) => {
   if (req.path === '/robots.txt') return next(); // Ignora redirecionamento para o robots.txt
   if (req.path === '/sitemap.xml') return next();
@@ -240,6 +344,123 @@ app.use((req, res, next) => {
   //res.status(404).sendFile(Path404);
   next();
 });
+
+//################################  Login Observador ################################//
+/**
+ * @swagger
+ * /loginObserver:
+ *   post:
+ *     summary: Login como observador
+ *     tags: [Autenticação]
+ *     responses:
+ *       200:
+ *         description: Login observador realizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 redirect:
+ *                   type: string
+ *       403:
+ *         description: Sistema disponível para login completo
+ *       500:
+ *         description: Erro interno
+ */
+app.post('/loginObserver', (req, res) => {
+  try {
+    if (isOccupied) {
+      req.session.observer = true;
+      
+      // Salvar sessão antes de responder
+      req.session.save(err => {
+        if (err) {
+          console.error('Erro na sessão:', err);
+          return res.status(500).json({message: 'Erro interno'});
+        }
+
+        // Registrar observador
+        activeObservers.set(req.sessionID, Date.now());
+        observerCount = activeObservers.size;
+        
+        console.log('Observador conectado:', req.sessionID);
+        return res.json({
+          message: 'Login observador realizado',
+          redirect: '/thomas?observer=true' // Adicione um parâmetro para identificação
+        });
+      });
+      
+    } else {
+      return res.status(403).json({
+        message: 'Sistema disponível. Faça login completo para controle'
+      });
+    }
+  } catch (error) {
+    console.error('Erro no endpoint:', error);
+    return res.status(500).json({message: 'Erro interno no servidor'});
+  }
+});
+
+// Rota para o chat com IA
+/*
+app.post('/api/chat', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1234/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: req.body.prompt }],
+        temperature: 0.7,
+        max_tokens: -1,
+        stream: true
+      })
+    });
+
+    const data = await response.json();
+    res.json({ response: data.choices[0].message.content });
+    
+  } catch (error) {
+    console.error('Erro no chat:', error);
+    res.status(500).json({ error: 'Erro na comunicação com a IA' });
+  }
+});*/
+
+// Rota para o chat com IA
+app.post('/api/chat', async (req, res) => {
+  try {
+    const response = await fetch('http://localhost:1234/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: req.body.prompt }],
+        temperature: 0.7,
+        max_tokens: -1,
+        stream: false
+      })
+    });
+
+    const data = await response.json();
+    res.json({ response: data.choices[0].message.content });
+    
+  } catch (error) {
+    console.error('Erro no chat:', error);
+    res.status(500).json({ error: 'Erro na comunicação com a IA' });
+  }
+});
+
+// Proxy para WebSocket do LM Studio (se necessário)
+app.use('/chat-ws', createProxyMiddleware({ 
+  target: 'ws://localhost:1234',
+  ws: true,
+  changeOrigin: true
+}));
+
 
 /**
  * @swagger
@@ -291,9 +512,7 @@ app.get('/', async (req, res) => {
 });
 
 
-app.get('/login', async (req, res) => {
-  return res.sendFile(path.join(__dirname, 'thomas', 'login.html'));
-});
+
 
 /**
  * @swagger
@@ -916,166 +1135,6 @@ setInterval(() => {
     }
   });
 }, 60000);
-
-//################################  Autenticação ################################//
-/**
- * @swagger
- * /loginObserver:
- *   post:
- *     summary: Login como observador
- *     tags: [Autenticação]
- *     responses:
- *       200:
- *         description: Login observador realizado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 redirect:
- *                   type: string
- *       403:
- *         description: Sistema disponível para login completo
- *       500:
- *         description: Erro interno
- */
-app.post('/loginObserver', (req, res) => {
-  try {
-    if (isOccupied) {
-      req.session.observer = true;
-      
-      // Salvar sessão antes de responder
-      req.session.save(err => {
-        if (err) {
-          console.error('Erro na sessão:', err);
-          return res.status(500).json({message: 'Erro interno'});
-        }
-
-        // Registrar observador
-        activeObservers.set(req.sessionID, Date.now());
-        observerCount = activeObservers.size;
-        
-        console.log('Observador conectado:', req.sessionID);
-        return res.json({
-          message: 'Login observador realizado',
-          redirect: '/thomas?observer=true' // Adicione um parâmetro para identificação
-        });
-      });
-      
-    } else {
-      return res.status(403).json({
-        message: 'Sistema disponível. Faça login completo para controle'
-      });
-    }
-  } catch (error) {
-    console.error('Erro no endpoint:', error);
-    return res.status(500).json({message: 'Erro interno no servidor'});
-  }
-});
-
-//################################  Hash e Autenticação ################################//
-// Adicione no início do arquivo
-require('dotenv').config();
-
-// Modifique a seção de Hash e Autenticação
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
-
-// Carrega usuários do .env
-const loadUsers = () => {
-  try {
-    return JSON.parse(process.env.USERS || '{}');
-  } catch (error) {
-    console.error('Erro ao carregar usuários:', error);
-    return {};
-  }
-};
-
-// Modifique o endpoint /login
-/**
- * @swagger
- * /login:
- *   post:
- *     summary: Autenticação de usuário
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login bem-sucedido
- *       401:
- *         description: Credenciais inválidas
- *       403:
- *         description: Sistema em uso
- *       500:
- *         description: Erro no servidor
- */
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const users = loadUsers();
-
-  try {
-    if (!username || !password) {
-      return res.status(401).json({ message: 'Credenciais inválidas!' });
-    }
-
-    // Verifica se o usuário existe e compara a senha
-    if (users[username] && bcrypt.compareSync(password, users[username])) {
-      if (isOccupied) {
-        return res.status(403).json({ message: 'Sistema em uso. Acesse como observador.' });
-      }
-      
-      isOccupied = true;
-      lastActiveTime = Date.now();
-      req.session.user = username;
-      
-      var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
-      console.log(datetime,' User Name:', req.session.user);  // Printa o nome do usuário no console do servidor
-      const emailList = ['jvpomigliooliveira@gmail.com', 'labpsp@fem.unicamp.br', 'k247218@dac.unicamp.br'];
-
-      for (const email of emailList) {
-        // Configurando os detalhes do email
-        let mailOptions = {
-          from: 'jvpo.emailsender@gmail.com',
-          to: email,
-          subject: 'Acesso ao Multi Usuario',
-          text: 'TimeStamp: '+datetime+'\nUsuario logado: '+req.session.user+'\nEndereço IP: '+ip
-        };
-        // Enviar o email
-        if (req.session.user != 'admin') {
-          transporter.sendMail(mailOptions, function(error, info) {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log('Email enviado: ' + info.response);
-            }
-          });
-        }
-      }
-
-      return res.status(200).json({ message: 'Login bem-sucedido!' });
-    }
-
-    return res.status(401).json({ message: 'Credenciais inválidas!' });
-    
-  } catch (error) {
-    console.error('Erro no login:', error);
-    return res.status(500).json({ message: 'Erro no servidor' });
-  }
-});
-
-
 
 //################################  Loop ################################//
 

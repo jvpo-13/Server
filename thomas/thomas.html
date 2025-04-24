@@ -41,6 +41,18 @@
   <div class="container">
     <h1>Laboratório Multiusuário</h1>
 
+    <div class="chat-container">
+      <div class="chat-header">
+        <h4>Assistente Virtual</h4>
+        <button id="toggleChat" class="button">−</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Pergunte para a IA...">
+        <button class="button" onclick="sendMessage()">Enviar</button>
+      </div>
+    </div>
+
     <div class="buttons-container">
       <!-- Seção 1: Estados dos Postos -->
       <h2 class="section-title">Estados dos Postos</h2>

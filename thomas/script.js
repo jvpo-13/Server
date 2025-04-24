@@ -224,3 +224,116 @@ document.addEventListener('DOMContentLoaded', () => {
     updateObserverCount(); // Chame na inicialização e atualize periodicamente
     setInterval(updateObserverCount, 10000); // Atualiza a cada 10 segundos
 });
+
+let chatHistory = [];
+
+async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message) return;
+  
+    // Desabilita o input durante o processamento
+    input.disabled = true;
+    document.querySelector('#chatInput + button').disabled = true;
+  
+    // Adiciona mensagem do usuário
+    appendMessage(message, 'user');
+    input.value = '';
+  
+    // Adiciona indicador de digitação
+    const loadingId = showTypingIndicator();
+  
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: message })
+      });
+  
+      const data = await response.json();
+      appendMessage(data.response, 'bot');
+      
+    } catch (error) {
+      appendMessage('Desculpe, ocorreu um erro na comunicação com a IA.', 'error');
+    } finally {
+      // Remove indicador e reabilita o input
+      removeTypingIndicator(loadingId);
+      input.disabled = false;
+      document.querySelector('#chatInput + button').disabled = false;
+    }
+}
+  
+// Funções auxiliares para o indicador
+function showTypingIndicator() {
+    const messagesDiv = document.getElementById('chatMessages');
+    const loadingDiv = document.createElement('div');
+    const uniqueId = Date.now().toString();
+    
+    loadingDiv.id = uniqueId;
+    loadingDiv.className = 'loading-message';
+    loadingDiv.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+      Gerando resposta...
+    `;
+    
+    messagesDiv.appendChild(loadingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    return uniqueId;
+}
+  
+function removeTypingIndicator(id) {
+    const element = document.getElementById(id);
+    if (element) element.remove();
+}
+
+// Toggle para minimizar/expandir
+document.getElementById('toggleChat').addEventListener('click', () => {
+    const chatContainer = document.querySelector('.chat-container');
+    chatContainer.classList.toggle('minimized');
+  });
+  
+// Função modificada para formatar markdown simples
+function formatBotResponse(text) {
+    // Processar listas primeiro
+    let formattedText = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Negrito
+      .replace(/\n/g, '<br>') // Quebras de linha
+      // Processar listas com marcadores
+      .replace(/(\* .+?(<br>|$))/g, '<ul>$1</ul>') // Envolver grupos de itens
+      .replace(/\* (.*?)(<br>|$)/g, '<li>$1</li>') // Itens individuais
+      // Correção para listas múltiplas
+      .replace(/<\/ul><ul>/g, ''); // Remover duplicações entre listas
+  
+    // Correção final para quebras de linha após listas
+    formattedText = formattedText
+      .replace(/<\/ul><br>/g, '</ul>')
+      .replace(/<\/li><br>/g, '</li>');
+  
+    return formattedText;
+}
+
+// Função appendMessage modificada
+function appendMessage(text, sender) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}-message`;
+
+    if(sender === 'bot') {
+        messageDiv.innerHTML = formatBotResponse(text);
+    } else {
+        messageDiv.textContent = text;
+    }
+
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+// Enter para enviar
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});

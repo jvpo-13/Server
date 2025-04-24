@@ -7,6 +7,7 @@ async function loginUser() {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // Permite envio de cookies
     body: JSON.stringify({ username, password }),
   });
 
