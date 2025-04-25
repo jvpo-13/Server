@@ -430,7 +430,10 @@ app.post('/api/chat', async (req, res) => {
 });*/
 
 // Rota para o chat com IA
+/*
 app.post('/api/chat', async (req, res) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30*60000); // 30 segundos
   try {
     const response = await fetch('http://localhost:1234/v1/chat/completions', {
       method: 'POST',
@@ -448,6 +451,28 @@ app.post('/api/chat', async (req, res) => {
     const data = await response.json();
     res.json({ response: data.choices[0].message.content });
     
+  } catch (error) {
+    console.error('Erro no chat:', error);
+    res.status(500).json({ error: 'Erro na comunicação com a IA' });
+  }
+});*/
+const axios = require('axios');
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const response = await axios.post(
+      'http://143.106.61.220:1234/v1/chat/completions',
+      {
+        messages: [{ role: 'user', content: req.body.prompt }],
+        temperature: 0.7,
+        max_tokens: -1,
+        stream: false
+      },
+      { timeout: 30*60000 } // Timeout de 30 segundos
+    );
+
+    res.json({ response: response.data.choices[0].message.content });
+
   } catch (error) {
     console.error('Erro no chat:', error);
     res.status(500).json({ error: 'Erro na comunicação com a IA' });
