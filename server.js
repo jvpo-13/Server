@@ -298,52 +298,97 @@ app.post('/login', (req, res) => {
 });
 
 app.use((req, res, next) => {
-  if (req.path === '/robots.txt') return next(); // Ignora redirecionamento para o robots.txt
-  if (req.path === '/sitemap.xml') return next();
-  if (!req.secure) {
-    //HTTPS:
-    console.log('Requisição insegura. Redirecionando para HTTPS...');
-    return res.redirect(`https://hd2d.fem.unicamp.br${req.url}`);
+  if (req.path === '/robots.txt')
+    return res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+  else if (req.path === '/sitemap.xml')
+    return res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+  else{
+    if (!req.secure) {
+      //HTTPS:
+      console.log('Requisição insegura. Redirecionando para HTTPS...');
+      return res.redirect(301,`https://hd2d.fem.unicamp.br${req.url}`);
 
-    //HTTP:
-    //res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    //res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+      //HTTP:
+      //res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      //res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    } else {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      res.setHeader('Permissions-Policy', 'geolocation=()');
+    }
+
+    const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
+    const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
+    const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/StartSystem', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
+    const privatePaths = ['/thomas', '/download-log', '/StartSystem', '/NBolas'];
+
+    // Atualizar timestamp do observador
+    if (req.session?.observer && activeObservers.has(req.sessionID)) {
+      activeObservers.set(req.sessionID, Date.now());
+    }
+
+    if (req.session?.user || req.session?.observer) {
+      return next();
+    }
+    //res.status(404).sendFile(Path404);
+    next();
   }
-
-  if (req.secure) {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    res.setHeader('Permissions-Policy', 'geolocation=()');
-  }
-
-  const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
-  const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
-  const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/StartSystem', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
-  const privatePaths = ['/thomas', '/download-log', '/StartSystem', '/NBolas'];
-  /*
-  if(!publicPaths.includes(req.path) && !loginPaths.includes(req.path) && !dataPaths.includes(req.path)) {
-    console.log('Acesso não autorizado ao path:', req.path);
-    return res.status(404).send('Página não encontrada');
-  }
-
-  res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
-
-  if (privatePaths.includes(req.path) && !req.session?.user && !req.session?.observer) {
-    console.log('Acesso não autorizado ao path:', req.path);
-    res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
-    return res.status(404).redirect('/login');
-  }*/
-
-  // Atualizar timestamp do observador
-  if (req.session?.observer && activeObservers.has(req.sessionID)) {
-    activeObservers.set(req.sessionID, Date.now());
-  }
-
-  if (req.session?.user || req.session?.observer) {
-    return next();
-  }
-  //res.status(404).sendFile(Path404);
-  next();
 });
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Página inicial com autenticação automática
+ *     tags: [Autenticação]
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: password
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: string
+ *     responses:
+ *       302:
+ *         description: Redirecionamento baseado nas credenciais
+ *       500:
+ *         description: Erro interno
+ */
+app.get('/', async (req, res) => {
+  if (req.path === '/robots.txt')
+    return res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+  else if (req.path === '/sitemap.xml')
+    return res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+  else{
+    const { username, password, page } = req.query; // Captura credenciais enviadas na query string
+    // Valide as credenciais (exemplo básico)
+    if (username === 'admin' && password === 'admin'){
+      // Cria a sessão para o usuário
+      req.session.user = username;
+      console.log(`Login automático realizado para o usuário: ${username}`);
+      if (page === 'video_feed_0') {
+        //Redireciona para a página desejada
+        return res.redirect('/video/video_feed_0');
+      }
+      if (page === 'video_feed_1') {
+        //Redireciona para a página desejada
+        return res.redirect('/video/video_feed_1');
+      } 
+      if (page === 'video_feed_2') {
+        //Redireciona para a página desejada
+        return res.redirect('/video/video_feed_2');
+      }
+      return res.redirect('/thomas');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+}
+});
+
 
 //################################  Login Observador ################################//
 /**
@@ -403,59 +448,7 @@ app.post('/loginObserver', (req, res) => {
   }
 });
 
-// Rota para o chat com IA
-/*
-app.post('/api/chat', async (req, res) => {
-  try {
-    const response = await fetch('http://localhost:1234/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: req.body.prompt }],
-        temperature: 0.7,
-        max_tokens: -1,
-        stream: true
-      })
-    });
-
-    const data = await response.json();
-    res.json({ response: data.choices[0].message.content });
-    
-  } catch (error) {
-    console.error('Erro no chat:', error);
-    res.status(500).json({ error: 'Erro na comunicação com a IA' });
-  }
-});*/
-
-// Rota para o chat com IA
-/*
-app.post('/api/chat', async (req, res) => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30*60000); // 30 segundos
-  try {
-    const response = await fetch('http://localhost:1234/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: req.body.prompt }],
-        temperature: 0.7,
-        max_tokens: -1,
-        stream: false
-      })
-    });
-
-    const data = await response.json();
-    res.json({ response: data.choices[0].message.content });
-    
-  } catch (error) {
-    console.error('Erro no chat:', error);
-    res.status(500).json({ error: 'Erro na comunicação com a IA' });
-  }
-});*/
+//############################### Chat com IA ################################//
 const axios = require('axios');
 
 app.post('/api/chat', async (req, res) => {
@@ -485,58 +478,6 @@ app.use('/chat-ws', createProxyMiddleware({
   ws: true,
   changeOrigin: true
 }));
-
-
-/**
- * @swagger
- * /:
- *   get:
- *     summary: Página inicial com autenticação automática
- *     tags: [Autenticação]
- *     parameters:
- *       - in: query
- *         name: username
- *         schema:
- *           type: string
- *       - in: query
- *         name: password
- *         schema:
- *           type: string
- *       - in: query
- *         name: page
- *         schema:
- *           type: string
- *     responses:
- *       302:
- *         description: Redirecionamento baseado nas credenciais
- *       500:
- *         description: Erro interno
- */
-app.get('/', async (req, res) => {
-  const { username, password, page } = req.query; // Captura credenciais enviadas na query string
-  // Valide as credenciais (exemplo básico)
-  if (username === 'admin' && password === 'admin'){
-    // Cria a sessão para o usuário
-    req.session.user = username;
-    console.log(`Login automático realizado para o usuário: ${username}`);
-    if (page === 'video_feed_0') {
-      //Redireciona para a página desejada
-      return res.redirect('/video/video_feed_0');
-    }
-    if (page === 'video_feed_1') {
-      //Redireciona para a página desejada
-      return res.redirect('/video/video_feed_1');
-    } 
-    if (page === 'video_feed_2') {
-      //Redireciona para a página desejada
-      return res.redirect('/video/video_feed_2');
-    }
-    return res.redirect('/thomas');
-  }
-  return res.redirect('/home');
-});
-
-
 
 
 /**

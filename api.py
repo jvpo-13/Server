@@ -3,8 +3,6 @@ import requests
 # Configurações de autenticação
 LOGIN_URL = "https://api.aloee.it/v1/Login"
 API_BASE_URL = "https://api.aloee.it/v1"
-#EMAIL = "eder.nascimento@ska.com.br"     # Credencial fornecida pela Aloee
-#SENHA = "Syneco@2022"         # Credencial fornecida pela Aloee
 EMAIL = "m250466@dac.unicamp.br"     # Credencial fornecida pela Aloee
 SENHA = "Pipefa1@"         # Credencial fornecida pela Aloee
 

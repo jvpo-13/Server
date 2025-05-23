@@ -300,21 +300,21 @@ document.getElementById('toggleChat').addEventListener('click', () => {
   
 // Função modificada para formatar markdown simples
 function formatBotResponse(text) {
-    // Processar listas primeiro
     let formattedText = text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Negrito
-      .replace(/\n/g, '<br>') // Quebras de linha
-      // Processar listas com marcadores
-      .replace(/(\* .+?(<br>|$))/g, '<ul>$1</ul>') // Envolver grupos de itens
-      .replace(/\* (.*?)(<br>|$)/g, '<li>$1</li>') // Itens individuais
-      // Correção para listas múltiplas
-      .replace(/<\/ul><ul>/g, ''); // Remover duplicações entre listas
-  
-    // Correção final para quebras de linha após listas
-    formattedText = formattedText
-      .replace(/<\/ul><br>/g, '</ul>')
-      .replace(/<\/li><br>/g, '</li>');
-  
+        // Processar cabeçalhos ###
+        .replace(/^###\s+(.*)/gm, '<h3 class="bot-heading">$1</h3>')
+        // Negrito
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // Quebras de linha
+        .replace(/\n/g, '<br>')
+        // Listas
+        .replace(/(\* .+?(<br>|$))/g, '<ul>$1</ul>')
+        .replace(/\* (.*?)(<br>|$)/g, '<li>$1</li>')
+        // Correções de formatação
+        .replace(/<\/ul><ul>/g, '')
+        .replace(/<\/ul><br>/g, '</ul>')
+        .replace(/<\/li><br>/g, '</li>');
+
     return formattedText;
 }
 

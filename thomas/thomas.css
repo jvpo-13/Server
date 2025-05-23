@@ -318,3 +318,16 @@ h1, h2, h3 {
   0%, 60%, 100% { transform: translateY(0); }
   30% { transform: translateY(-5px); }
 }
+
+.bot-heading {
+  margin: 15px 0;
+  color: #2c3e50;
+  font-size: 1.4em;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 5px;
+}
+
+.bot-heading strong {
+  font-weight: inherit;
+  color: inherit;
+}
