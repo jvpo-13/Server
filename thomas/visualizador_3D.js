@@ -1,7 +1,7 @@
 let velCarro = 1;
 let theta = 0;
 let fraction = 0;
-let velocidade = 0.001;
+let velocidade = 0.0005;
 const vec = new THREE.Vector3(1, 0, 0);
 const axis = new THREE.Vector3();
 
@@ -99,7 +99,7 @@ function handleKeyboard(event) {
     case '3': // Visão superior
       positionCam = [0,distance/3,distance];
       break;
-	  case '4': // Visão diagonal
+	  case '5': // Visão diagonal
       positionCam = [-distance, distance/3, 0];
       break;
     case 'q': // Visão diagonal
