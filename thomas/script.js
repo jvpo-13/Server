@@ -189,11 +189,11 @@ document.getElementById('downloadLog').addEventListener('click', () => {
   });
 
 function updateObserverCount() {
-    fetch('/observer-count')
+    fetch('https://hd2d.fem.unicamp.br/observer-count')
       .then(res => res.json())
       .then(data => {
         document.getElementById('observerCount').innerText = 
-          `${data.count}/${data.maxCapacity}`;
+          `Observadores ativos: ${data.count}/${data.maxCapacity}`;
       });
 }
 
@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch('/check-session').then(res => res.json()).then(sessionData => {
               if (!sessionData.observer) window.location.reload();
             });
-          }, 30000);
+          }, 10000);
         }
     });
 

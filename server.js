@@ -18,28 +18,6 @@ app.use(compression({
     return /text|javascript|css/.test(res.getHeader('Content-Type'));
   }
 }));
-/*
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [ "'self'", "'unsafe-inline'", "https://hd2d.fem.unicamp.br", "https://www.googletagmanager.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-        imgSrc: ["'self'", "data:", "https://hd2d.fem.unicamp.br", "https://www.googletagmanager.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-        connectSrc: ["'self'", "https://hd2d.fem.unicamp.br"],
-        frameSrc: ["'self'", "https://app.aloee.it"],
-        objectSrc: ["'none'"]
-      }
-    },
-    crossOriginEmbedderPolicy: { policy: "require-corp" },
-    crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-site" },
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
-  })
-);
-*/
 
 app.use((req, res, next) => {
   res.setHeader(
@@ -165,34 +143,10 @@ app.use(session({
   rolling: true
 }));
 
-
-/*
-const requireUser = (req, res, next) => {
-  if (req.session.user) return next();
-  res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
-};
-*/
 const requireUser = (req, res, next) => {
   if (req.session.user || req.session.observer) return next(); // Permite usuários e observadores
   res.status(403).sendFile(path.join(__dirname, 'thomas', 'login.html'));
 };
-
-/*
-app.use(session({
-  secret: 'your-secret-key', // Chave secreta para criptografar a sessão
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false, // Deve ser true se usar HTTPS
-    httpOnly: true, // Evita acesso do lado do cliente
-    sameSite: 'lax', // Permite envio de cookies em contextos de terceiros
-    maxAge: 15 * 60 * 1000 // Sessão expira em 15 minutos
-  }
-}));
-*/
-
-// Middleware para registrar cada requisição recebida
-// Middleware global, exceto para páginas públicas (login, por exemplo)
 
 app.get('/login', async (req, res) => {
   return res.sendFile(path.join(__dirname, 'thomas', 'login.html'));
@@ -308,19 +262,10 @@ app.use((req, res, next) => {
       //HTTPS:
       console.log('Requisição insegura. Redirecionando para HTTPS...');
       return res.redirect(301,`https://hd2d.fem.unicamp.br${req.url}`);
-
-      //HTTP:
-      //res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-      //res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     } else {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
       res.setHeader('Permissions-Policy', 'geolocation=()');
     }
-
-    const publicPaths = ['/', '/home', '/login', '/login.js', '/public/favicon.ico', '/loginObserver', '/pipefa', '/bracorobotico', '/cena.js', '/pista_pontos.js', '/visualizador_3D.js'];
-    const loginPaths = ['/thomas',  '/video/video_feed_0', '/video/video_feed_1', '/video/video_feed_2'];
-    const dataPaths = ['/data', '/getCV', '/getCL', '/getCA1', '/getCA2', '/getCA3', '/StartSystem', '/NBolas', '/Velocidade', '/Tempo_Ligado', '/Distancia_Percorrida', '/Nivel_Bateria', '/User', '/observer-count', '/loginObserver', '/login', '/check-session'];
-    const privatePaths = ['/thomas', '/download-log', '/StartSystem', '/NBolas'];
 
     // Atualizar timestamp do observador
     if (req.session?.observer && activeObservers.has(req.sessionID)) {
@@ -330,7 +275,6 @@ app.use((req, res, next) => {
     if (req.session?.user || req.session?.observer) {
       return next();
     }
-    //res.status(404).sendFile(Path404);
     next();
   }
 });
@@ -372,18 +316,6 @@ app.get('/', async (req, res) => {
       // Cria a sessão para o usuário
       req.session.user = username;
       console.log(`Login automático realizado para o usuário: ${username}`);
-      if (page === 'video_feed_0') {
-        //Redireciona para a página desejada
-        return res.redirect('/video/video_feed_0');
-      }
-      if (page === 'video_feed_1') {
-        //Redireciona para a página desejada
-        return res.redirect('/video/video_feed_1');
-      } 
-      if (page === 'video_feed_2') {
-        //Redireciona para a página desejada
-        return res.redirect('/video/video_feed_2');
-      }
       return res.redirect('/thomas');
     }
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
@@ -562,85 +494,6 @@ app.use('/video', createProxyMiddleware({
  *     responses:
  *       200:
  *         description: Página de visualização
- */
-app.get('/camera', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'camera.html'));
-});
-
-//################################  Video Stream MJPEG ################################//
-const activeStreams = {};
-
-/**
- * @swagger
- * /video_feed:
- *   get:
- *     summary: Stream de vídeo MJPEG
- *     tags: [Video]
- *     responses:
- *       200:
- *         description: Stream de vídeo
- *         content:
- *           multipart/x-mixed-replace; boundary=frame
- */
-app.get('/video_feed', (req, res) => {
-  const rtspUrl = "rtsp://admin:@143.106.61.220:554/user=admin&password=&channel=0&stream=0.sdp?real_stream";
-  
-  // Configurar headers corretamente
-  res.writeHead(200, {
-    'Cache-Control': 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0',
-    'Connection': 'close',
-    'Content-Type': 'multipart/x-mixed-replace; boundary=frame',
-    'Pragma': 'no-cache'
-  });
-
-  // Parâmetros otimizados para FFmpeg
-  const ffmpeg = child_process.spawn('ffmpeg', [
-    '-rtsp_transport', 'tcp',        // Usar TCP para maior estabilidade
-    '-i', rtspUrl,
-    '-q:v', '5',                     // Qualidade visual (1-31, menor é melhor)
-    '-s', '1280x720',                // Resolução (ajuste conforme necessário)
-    '-f', 'mjpeg',
-    '-vsync', '1',
-    '-r', '10',                       // Taxa de frames reduzida
-    '-an',                            // Sem áudio
-    '-fflags', 'nobuffer',           // Reduzir buffer
-    '-analyzeduration', '1000000',    // Tempo de análise reduzido
-    '-probesize', '32',               // Tamanho da sonda reduzido
-    '-'
-  ]);
-
-  // Log de erros detalhado
-  ffmpeg.stderr.on('data', (data) => {
-    console.error(`FFmpeg stderr: ${data}`);
-  });
-
-  ffmpeg.on('error', (err) => {
-    console.error('Erro no FFmpeg:', err);
-  });
-
-  ffmpeg.on('close', (code) => {
-    console.log(`FFmpeg process exited with code ${code}`);
-    res.end();
-  });
-
-  // Pipe dos dados
-  ffmpeg.stdout.pipe(res);
-
-  // Limpeza ao fechar conexão
-  req.on('close', () => {
-    ffmpeg.kill('SIGKILL');
-  });
-});
-
-/**
- * @swagger
- * /camera:
- *   get:
- *     summary: Página de visualização da câmera
- *     tags: [Video]
- *     responses:
- *       200:
- *         description: Página HTML da câmera
  */
 app.get('/camera', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'camera.html'));
@@ -1036,6 +889,17 @@ app.get('/download-files', (req, res) => {
     res.status(500).send('Erro ao gerar arquivo ZIP');
   }
 });
+
+//################################  IP ################################//
+let ip = '';
+
+// Middleware para capturar o IP
+app.use((req, res, next) => {
+  ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log('Endereço IP:', ip);
+  next();
+});
+
 //################################  Cookies ################################//
 // For todays date;
 Date.prototype.today = function () { 
@@ -1078,8 +942,7 @@ app.put('/User', async (req, res) => {
       return res.status(400).json({ error: 'Nome inválido' });
     }
     var datetime = "LastSync: " + new Date().today() + " @ " + new Date().timeNow();
-    console.log(datetime,' Cookie User Name:', value);  // Printa o nome do usuário no console do servidor
-
+    console.log('Endereço IP:', ip, datetime,' Cookie User Name:', value);  // Printa o nome do usuário no console do servidor
     res.json({ message: 'User logged successfully' });
   } catch (error) {
     console.error('Error performing PUT request:', error);
@@ -1100,16 +963,6 @@ let transporter = nodemailer.createTransport({
   }
 });
 
-//################################  IP ################################//
-let ip = '';
-
-// Middleware para capturar o IP
-app.use((req, res, next) => {
-  ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log('Endereço IP:', ip);
-  next();
-});
-
 //#################################  Observação de Usuário ################################//
 
 // Variáveis globais
@@ -1127,22 +980,6 @@ app.get('/check-session', (req, res) => {
 app.use((req, res, next) => {
   if (req.session.user) lastActiveTime = Date.now();
   next();
-});
-
-// Middleware 404 (SEMPRE o último middleware)
-app.use((req, res, next) => {
-  // Verificação adicional para arquivos estáticos
-  const filePath = path.join(__dirname, 'public', req.path);
-  
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-      if(err) {
-          // Arquivo realmente não existe
-          res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
-      } else {
-          // Se o arquivo existe mas não foi capturado, passa adiante
-          next();
-      }
-  });
 });
 
 // Verificar inatividade a cada minuto
@@ -1185,17 +1022,35 @@ app.get('/observer-count', (req, res) => {
   });
 });
 
-// Verificar observadores inativos a cada minuto
+
+// Verificar observadores inativos a cada segundo
 setInterval(() => {
   const now = Date.now();
   activeObservers.forEach((timestamp, sessionID) => {
-    if (now - timestamp > 60 * 1000) { // 1 minuto de inatividade
+    if (now - timestamp > 1000) { // 1 segundo de inatividade
       activeObservers.delete(sessionID);
       observerCount = activeObservers.size;
       console.log(`Observador removido. Total: ${observerCount}`);
     }
   });
-}, 60000);
+}, 1000);
+
+//################################  Middleware 404 ################################//
+// (SEMPRE o último middleware!!!!!)
+app.use((req, res, next) => {
+  // Verificação adicional para arquivos estáticos
+  const filePath = path.join(__dirname, 'public', req.path);
+  
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+      if(err) {
+          // Arquivo realmente não existe
+          res.status(404).sendFile(path.join(__dirname, 'public', 'errors', '404.html'));
+      } else {
+          // Se o arquivo existe mas não foi capturado, passa adiante
+          next();
+      }
+  });
+});
 
 //################################  Loop ################################//
 

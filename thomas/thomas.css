@@ -21,6 +21,17 @@ body {
   top: 10px;
   right: 10px;
   border-radius: 5px;
+  background: #f44336; color: white;
+}
+
+.observer-count {
+  padding: 10px;
+  text-align: center;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  border-radius: 5px;
+  background: #33798f; color: white;
 }
   
 .connected { background: #4CAF50; color: white; }
@@ -58,7 +69,6 @@ h1, h2, h3 {
   gap: 1rem;
   margin: 1rem 0;
 }
-
   
 .state-item {
   background: #f5f5f5;
@@ -68,7 +78,7 @@ h1, h2, h3 {
 }
   
 .section-title {
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #2c687a;
   padding-bottom: 0.5rem;
   margin: 2rem 0 1rem;
 }
@@ -105,7 +115,6 @@ h1, h2, h3 {
 }
 
  /* Ajustes nos campos de texto */
-
 .textarea {
   height: min-content;
   width: 30%;
@@ -158,14 +167,6 @@ h1, h2, h3 {
   background-color: #e67e22;
 }
 
-/*
-.archives-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
-  margin: 1rem 0;
-}
-*/
 .download-button {
   display: block;
   background-color: #28a745;
@@ -177,7 +178,7 @@ h1, h2, h3 {
 }
 
 .zip-button {
-  background-color: #007bff;
+  background-color: #3e95af;
   color: white;
   padding: 12px 24px;
   margin: 20px 0;
@@ -186,7 +187,7 @@ h1, h2, h3 {
 }
 
 .zip-button:hover {
-  background-color: #0056b3;
+  background-color: #245766;
 }
 
 /* Chat Container */
