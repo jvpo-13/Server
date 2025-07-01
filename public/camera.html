@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Monitoramento de Câmeras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a4365, #0f3460);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .camera-container {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+        
+        .video-wrapper {
+            position: relative;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        
+        .video-feed {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .camera-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .camera-selector label {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        #cameraSelector {
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        #cameraSelector:hover {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .camera-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.15);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+        
+        .status-dot.offline {
+            background: #f87171;
+        }
+        
+        .timestamp {
+            font-family: monospace;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .camera-selector {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .camera-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Monitoramento</h1>
+            <p>Visualize em tempo real as câmeras de segurança</p>
+        </header>
+        
+        <main>
+            <div class="camera-container">
+                <div class="video-wrapper">
+                    <img id="videoFeed" class="video-feed" alt="Transmissão ao vivo">
+                </div>
+                
+                <div class="controls">
+                    <div class="camera-selector">
+                        <label for="cameraSelector">Selecione a Câmera:</label>
+                        <select id="cameraSelector">
+                            <option value="0">Câmera 1 - Thomas</option>
+                            <option value="1">Câmera 2 - Thomas</option>
+                            <option value="2" selected>Câmera 3 - Pipefa</option>
+                            <option value="3">Câmera 4 - Pipefa</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="camera-info">
+                    <div class="status-indicator">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="statusText">Conectado</span>
+                    </div>
+                    <div class="timestamp" id="timestamp"></div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Sistema de Monitoramento &copy; 2025 | Todos os direitos reservados</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cameraSelector = document.getElementById('cameraSelector');
+            const videoFeed = document.getElementById('videoFeed');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const timestamp = document.getElementById('timestamp');
+            
+            // Configurações das câmeras
+            const cameras = {
+                0: { name: "Câmera 1 - Thomas", url: "/video_feed_0" },
+                1: { name: "Câmera 2 - Thomas", url: "/video_feed_1" },
+                2: { name: "Câmera 3 - Pipefa", url: "/video_feed_2" },
+                3: { name: "Câmera 4 - Pipefa", url: "/video_feed_3" }
+            };
+            
+            // Câmera atualmente selecionada
+            let currentCamera = cameraSelector.value;
+            
+            // Atualiza o timestamp
+            function updateTimestamp() {
+                const now = new Date();
+                timestamp.textContent = now.toLocaleString();
+            }
+            
+            // Atualiza o feed de vídeo
+            function updateVideoFeed() {
+                // Adiciona timestamp para evitar cache
+                const timestamp = new Date().getTime();
+                const feedUrl = `/video${cameras[currentCamera].url}?t=${timestamp}`;
+                
+                // Mostra status de carregamento
+                videoFeed.src = '';
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Conectando...';
+                
+                // Tenta carregar o novo feed
+                videoFeed.onload = function() {
+                    statusDot.classList.remove('offline');
+                    statusText.textContent = 'Conectado';
+                };
+                
+                videoFeed.onerror = function() {
+                    statusDot.classList.add('offline');
+                    statusText.textContent = 'Falha na conexão';
+                    // Tenta reconectar após 5 segundos
+                    setTimeout(updateVideoFeed, 5000);
+                };
+                
+                videoFeed.src = feedUrl;
+            }
+            
+            // Inicializa o sistema
+            function init() {
+                updateVideoFeed();
+                updateTimestamp();
+                
+                // Atualiza timestamp a cada minuto
+                setInterval(updateTimestamp, 60000);
+                
+                // Verifica conexão periodicamente
+                setInterval(() => {
+                    if (!videoFeed.complete || videoFeed.naturalWidth === 0) {
+                        statusDot.classList.add('offline');
+                        statusText.textContent = 'Falha na conexão';
+                        updateVideoFeed();
+                    }
+                }, 10000);
+            }
+            
+            // Troca de câmera quando o usuário selecionar
+            cameraSelector.addEventListener('change', function() {
+                currentCamera = this.value;
+                updateVideoFeed();
+            });
+            
+            // Inicia o sistema
+            init();
+        });
+    </script>
+</body>
+</html>

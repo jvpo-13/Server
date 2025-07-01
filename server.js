@@ -1,9 +1,9 @@
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const child_process = require('child_process');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
-
 const express = require('express');
 const compression = require('compression');
 //const helmet = require('helmet');
@@ -101,7 +101,7 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT'],
   exposedHeaders: ['Content-Encoding', 'Cache-Control', 'Content-Type'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Accept', 'Sec-WebSocket-Protocol']
 }));
 
 app.use((req, res, next) => {
@@ -128,7 +128,7 @@ const server = https.createServer(options, app);
 // Configura o Express.js para servir arquivos estáticos da pasta 'public'
 const publicPath = path.join(__dirname, 'public');
 const thomasPath = path.join(__dirname, 'thomas');
-const Path404 = path.join(__dirname, 'public', 'errors', '404.html');
+const nodePath = path.join(__dirname, 'node_modules');
 
 //app.use('/', express.static(publicPath));
 // Configuração existente - modifique para:
@@ -145,6 +145,7 @@ app.use('/', express.static(publicPath, {
   }
 }));
 app.use('/', express.static(thomasPath));
+app.use('/', express.static(nodePath));
 app.use(express.json());
 
 // HTTPS
@@ -551,6 +552,100 @@ app.use('/video', createProxyMiddleware({
   changeOrigin: true,
   ws: true
 }));
+
+/**
+ * @swagger
+ * /camera-ip:
+ *   get:
+ *     summary: Visualização da câmera IP via HTTP tunneling
+ *     tags: [Video]
+ *     responses:
+ *       200:
+ *         description: Página de visualização
+ */
+app.get('/camera', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'camera.html'));
+});
+
+//################################  Video Stream MJPEG ################################//
+const activeStreams = {};
+
+/**
+ * @swagger
+ * /video_feed:
+ *   get:
+ *     summary: Stream de vídeo MJPEG
+ *     tags: [Video]
+ *     responses:
+ *       200:
+ *         description: Stream de vídeo
+ *         content:
+ *           multipart/x-mixed-replace; boundary=frame
+ */
+app.get('/video_feed', (req, res) => {
+  const rtspUrl = "rtsp://admin:@143.106.61.220:554/user=admin&password=&channel=0&stream=0.sdp?real_stream";
+  
+  // Configurar headers corretamente
+  res.writeHead(200, {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0',
+    'Connection': 'close',
+    'Content-Type': 'multipart/x-mixed-replace; boundary=frame',
+    'Pragma': 'no-cache'
+  });
+
+  // Parâmetros otimizados para FFmpeg
+  const ffmpeg = child_process.spawn('ffmpeg', [
+    '-rtsp_transport', 'tcp',        // Usar TCP para maior estabilidade
+    '-i', rtspUrl,
+    '-q:v', '5',                     // Qualidade visual (1-31, menor é melhor)
+    '-s', '1280x720',                // Resolução (ajuste conforme necessário)
+    '-f', 'mjpeg',
+    '-vsync', '1',
+    '-r', '10',                       // Taxa de frames reduzida
+    '-an',                            // Sem áudio
+    '-fflags', 'nobuffer',           // Reduzir buffer
+    '-analyzeduration', '1000000',    // Tempo de análise reduzido
+    '-probesize', '32',               // Tamanho da sonda reduzido
+    '-'
+  ]);
+
+  // Log de erros detalhado
+  ffmpeg.stderr.on('data', (data) => {
+    console.error(`FFmpeg stderr: ${data}`);
+  });
+
+  ffmpeg.on('error', (err) => {
+    console.error('Erro no FFmpeg:', err);
+  });
+
+  ffmpeg.on('close', (code) => {
+    console.log(`FFmpeg process exited with code ${code}`);
+    res.end();
+  });
+
+  // Pipe dos dados
+  ffmpeg.stdout.pipe(res);
+
+  // Limpeza ao fechar conexão
+  req.on('close', () => {
+    ffmpeg.kill('SIGKILL');
+  });
+});
+
+/**
+ * @swagger
+ * /camera:
+ *   get:
+ *     summary: Página de visualização da câmera
+ *     tags: [Video]
+ *     responses:
+ *       200:
+ *         description: Página HTML da câmera
+ */
+app.get('/camera', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'camera.html'));
+});
+
 
 //################################  TCP Socket Server ################################//
 const net = require('net');
