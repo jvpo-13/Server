@@ -4,7 +4,7 @@ const width = 1800
 const height = 1800
 const camera = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, 1, 10000 );
 const renderer = new THREE.WebGLRenderer({antialias: true});
-renderer.setSize(800, 800);
+renderer.setSize(800, 800*0.8);
 document.getElementById('threejs-container').appendChild(renderer.domElement);
 
 

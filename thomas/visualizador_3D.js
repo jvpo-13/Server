@@ -103,10 +103,10 @@ function handleKeyboard(event) {
       positionCam = [0, distance, 0];
       break;
     case '3': // Visão superior
-      positionCam = [0,distance/3,distance];
+      positionCam = [-distance, distance/1.5, 0];
       break;
 	  case '5': // Visão diagonal
-      positionCam = [-distance, distance/3, 0];
+      positionCam = [0,distance/3,distance];
       break;
     case 'q': // Visão diagonal
       speed = Math.PI/4;
