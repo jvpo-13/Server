@@ -65,7 +65,6 @@ segmentosBase.forEach(seg => pontos.add(seg));
 //const caminho = path();
 //scene.add(caminho);
 
-
 function path() {
   const material = new THREE.LineBasicMaterial({color: 0x9132a8});
   const points = pontos.curves.reduce((p, d)=> [...p, ...d.getPoints(20)], []);

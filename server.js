@@ -469,12 +469,21 @@ app.get('/home', async (req, res) => {
 
 //################################  Video Stream ################################//
 
+
 /**
  * @swagger
- * /video:
+ * /video/{cameraPath}:
  *   get:
  *     summary: Proxy para transmissão de vídeo
  *     tags: [Video]
+ *     parameters:
+ *       - in: path
+ *         name: cameraPath
+ *         required: true
+ *         description: Caminho da câmera para transmissão de vídeo
+ *         schema:
+ *           type: string
+ *           example: video_feed_0
  *     responses:
  *       200:
  *         description: Conexão de vídeo estabelecida
@@ -484,21 +493,6 @@ app.use('/video', createProxyMiddleware({
   changeOrigin: true,
   ws: true
 }));
-
-/**
- * @swagger
- * /camera-ip:
- *   get:
- *     summary: Visualização da câmera IP via HTTP tunneling
- *     tags: [Video]
- *     responses:
- *       200:
- *         description: Página de visualização
- */
-app.get('/camera', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'camera.html'));
-});
-
 
 //################################  TCP Socket Server ################################//
 const net = require('net');
