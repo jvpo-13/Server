@@ -23,7 +23,14 @@ function moveCar() {
 
   // Atualização da fração
   if (isSegmentActive) {
-    fraction = (fraction + velocidade) % 1; // Simplifica o reset
+    fraction = (fraction + velocidade) % 1;
+  }else {
+    const elementId = `data${segmentIds[currentSegment+1]}`;
+    const statusElement = document.getElementById(elementId);
+    const isSegmentActive = statusElement?.innerText === 'Em Operação';
+    if (isSegmentActive) {
+      fraction = (fraction + velocidade) % 1;
+    }
   }
 
   // Atualização da posição e rotação
