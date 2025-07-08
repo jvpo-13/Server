@@ -494,6 +494,10 @@ app.use('/video', createProxyMiddleware({
   ws: true
 }));
 
+app.get('/camera', async (req, res) => {
+  return res.sendFile(path.join(__dirname, 'public', 'camera.html'));
+});
+
 //################################  TCP Socket Server ################################//
 const net = require('net');
 var receivedData = {};

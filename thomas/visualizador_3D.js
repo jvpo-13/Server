@@ -8,9 +8,51 @@ const axis = new THREE.Vector3();
 function moveCar() {
   if (!carro) return;
 
+  // Verifica se o sistema foi finalizado
+  const dataActiveElement = document.getElementById('dataActive');
+  if (dataActiveElement?.innerText === 'Finalizado') {
+    fraction = 0;
+  }
+
   // Array de segmentos em ordem crescente
   const segmentos = [pontosCV, pontosCA1, pontosCL, pontosCA2, pontosCA3];
   const segmentIds = ['CV', 'CA1', 'CL', 'CA2', 'CA3'];
+
+  ///////////////
+  // Verifica qual trecho está com status "Em Operação"
+  let activeSegmentIndex = -1;
+  for (let i = 0; i < segmentIds.length; i++) {
+    const statusElement = document.getElementById(`data${segmentIds[i]}`);
+    if (statusElement?.innerText === 'Em Operação') {
+      activeSegmentIndex = i;
+      break;
+    }
+  }
+
+  // Se encontrou um trecho ativo, verifica se a fraction está dentro do range desse trecho
+  if (activeSegmentIndex !== -1) {
+    const start = activeSegmentIndex === 0 ? 0 : segmentos[activeSegmentIndex - 1].getLength() / pontos.getLength();
+    const end = segmentos[activeSegmentIndex].getLength() / pontos.getLength();
+    /*
+    if (fraction < start || fraction >= end) {
+      fraction = start;
+    }*/
+    if (fraction + velocidade > 1) {
+      // Se a fração mais a velocidade não ultrapassa 1, continua normalmente
+      fraction = 1;
+      console.log(`Reiniciando fração para o início: ${segmentIds[activeSegmentIndex]}`);
+    }else if (fraction < start) {
+      fraction = start;
+      console.log(`Reiniciando fração para o início do segmento ativo: ${segmentIds[activeSegmentIndex]}`);
+    }else if (fraction >= end) {
+      fraction = end;
+      console.log(`Reiniciando fração para o final do segmento ativo: ${segmentIds[activeSegmentIndex]}`);
+    }else {
+      fraction = (fraction + velocidade) % 1;
+      console.log(`Continuando no segmento ativo: ${segmentIds[activeSegmentIndex]}, fração: ${fraction.toFixed(4)}`);
+    }
+  }
+  /////////////////////////////
   
   // Determina o segmento atual usando findIndex
   currentSegment = segmentos.findIndex(seg => seg.getLength() > fraction * pontos.getLength());
@@ -22,17 +64,12 @@ function moveCar() {
   const isSegmentActive = statusElement?.innerText === 'Em Operação';
 
   // Atualização da fração
+  /*
   if (isSegmentActive) {
     fraction = (fraction + velocidade) % 1;
-  }else {
-    const elementId = `data${segmentIds[currentSegment+1]}`;
-    const statusElement = document.getElementById(elementId);
-    const isSegmentActive = statusElement?.innerText === 'Em Operação';
-    if (isSegmentActive) {
-      fraction = (fraction + velocidade) % 1;
-    }
-  }
-
+    console.log(`Movendo carro no segmento: ${segmentIds[currentSegment]}, fração: ${fraction.toFixed(4)}`);
+  }*/
+  
   // Atualização da posição e rotação
   const newPosition = pontos.getPoint(fraction);
   const tangent = pontos.getTangent(fraction).normalize();
