@@ -40,16 +40,12 @@ function moveCar() {
     if (fraction + velocidade > 1) {
       // Se a fração mais a velocidade não ultrapassa 1, continua normalmente
       fraction = 1;
-      console.log(`Reiniciando fração para o início: ${segmentIds[activeSegmentIndex]}`);
     }else if (fraction < start) {
       fraction = start;
-      console.log(`Reiniciando fração para o início do segmento ativo: ${segmentIds[activeSegmentIndex]}`);
     }else if (fraction >= end) {
       fraction = end;
-      console.log(`Reiniciando fração para o final do segmento ativo: ${segmentIds[activeSegmentIndex]}`);
     }else {
       fraction = (fraction + velocidade) % 1;
-      console.log(`Continuando no segmento ativo: ${segmentIds[activeSegmentIndex]}, fração: ${fraction.toFixed(4)}`);
     }
   }
   /////////////////////////////
