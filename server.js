@@ -980,13 +980,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Verificar inatividade a cada minuto
+// Verificar inatividade a cada segundo
 setInterval(() => {
-  if (isOccupied && (Date.now() - lastActiveTime) > 60*1000) {
+  if (isOccupied && (Date.now() - lastActiveTime) > 11*1000) {
     isOccupied = false;
     console.log('Sistema liberado por inatividade');
   }
-}, 60000);
+}, 1000);
 
 
 //################################  Contagem de Observador ################################//
@@ -1025,7 +1025,7 @@ app.get('/observer-count', (req, res) => {
 setInterval(() => {
   const now = Date.now();
   activeObservers.forEach((timestamp, sessionID) => {
-    if (now - timestamp > 1000) { // 1 segundo de inatividade
+    if (now - timestamp > 11*1000) { // 11 segundo de inatividade
       activeObservers.delete(sessionID);
       observerCount = activeObservers.size;
       console.log(`Observador removido. Total: ${observerCount}`);
